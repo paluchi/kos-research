@@ -1,6 +1,6 @@
 import Highcharts from "highcharts";
-import HighchartsReact from "highcharts-react-official";
-import HighchartsMore from "highcharts/highcharts-more";
+import { HighchartsReact } from "highcharts-react-official";
+import MoreModule from "highcharts/highcharts-more.js";
 import { competitors } from "../../data/competitors";
 import {
   fundingBubbleData,
@@ -11,7 +11,9 @@ import {
 } from "../../data/insightData";
 import { ChartSection } from "./ChartSection";
 
-HighchartsMore(Highcharts);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const initMore = (MoreModule as any).default || MoreModule;
+if (typeof initMore === "function") initMore(Highcharts);
 
 /* ── 2. Funding vs Dimensions Bubble ─────────────── */
 
@@ -87,7 +89,7 @@ export function CapitalByCategory() {
       bar: {
         dataLabels: {
           enabled: true,
-          formatter: function (this: Highcharts.PointLabelObject): string {
+          formatter: function (this: { y?: number | null }): string {
             const v = this.y ?? 0;
             return v >= 1000 ? `$${(v / 1000).toFixed(1)}B` : `$${Math.round(v)}M`;
           },

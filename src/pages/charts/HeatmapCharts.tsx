@@ -1,15 +1,13 @@
 import Highcharts from "highcharts";
-import HighchartsReact from "highcharts-react-official";
-import HeatmapModule from "highcharts/modules/heatmap";
+import { HighchartsReact } from "highcharts-react-official";
+import HeatmapModule from "highcharts/modules/heatmap.js";
 import { competitors } from "../../data/competitors";
 import { dimHeatmapData, dimCooccurrenceData, dimAdoptionData } from "../../data/insightData";
 import { ChartSection } from "./ChartSection";
 
-if (typeof HeatmapModule === "function") {
-  HeatmapModule(Highcharts);
-} else {
-  (HeatmapModule as unknown as { default: typeof HeatmapModule }).default(Highcharts);
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const initHeatmap = (HeatmapModule as any).default || HeatmapModule;
+if (typeof initHeatmap === "function") initHeatmap(Highcharts);
 
 const COLORS = {
   accent: "#6366f1",
@@ -34,7 +32,7 @@ export function DimensionHeatmap() {
     yAxis: {
       categories,
       labels: { style: { fontSize: "10px" } },
-      title: { text: null },
+      title: { text: undefined },
       reversed: true,
     },
     colorAxis: {
@@ -120,7 +118,7 @@ export function CooccurrenceMatrix() {
     chart: { type: "heatmap", height: 500 },
     title: { text: undefined },
     xAxis: { categories: dims, labels: { style: { fontSize: "9px" }, rotation: -45 } },
-    yAxis: { categories: dims, labels: { style: { fontSize: "9px" } }, title: { text: null }, reversed: true },
+    yAxis: { categories: dims, labels: { style: { fontSize: "9px" } }, title: { text: undefined }, reversed: true },
     colorAxis: {
       min: 0,
       stops: [[0, "#f8fafc"], [0.3, "#bfdbfe"], [0.6, "#fbbf24"], [1, "#dc2626"]],
