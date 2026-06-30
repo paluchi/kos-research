@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOS — The AI Analytics Landscape</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #ffffff;
+            color: #0f172a;
+            overflow: hidden;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 48px 80px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+        }
+
+        .slide.active { opacity: 1; visibility: visible; }
+
+        .slide-content { max-width: 1140px; width: 100%; text-align: center; }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #0369a1 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2.4rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+
+        .subtitle { font-size: 1.2rem; color: #1e293b; margin-bottom: 1.75rem; font-weight: 400; }
+        .emphasis { font-size: 1.4rem; font-weight: 600; color: #0369a1; margin-top: 1.75rem; }
+        .divider { width: 60px; height: 3px; background: linear-gradient(90deg, #0369a1, #7c3aed); margin: 1.5rem auto; border-radius: 2px; }
+
+        .icon { width: 24px; height: 24px; stroke-width: 1.5; }
+        .icon-lg { width: 32px; height: 32px; }
+        .icon-xl { width: 48px; height: 48px; stroke-width: 1.25; }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: left;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card:hover { border-color: #0369a1; box-shadow: 0 4px 12px rgba(3,105,161,0.08); }
+        .card.highlight { border: 2px solid #0369a1; background: rgba(3,105,161,0.03); }
+        .card.danger { border: 1px solid #fca5a5; background: rgba(220,38,38,0.03); }
+
+        .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+        .card-icon { width: 38px; height: 38px; border-radius: 8px; background: rgba(3,105,161,0.08); display: flex; align-items: center; justify-content: center; color: #0369a1; flex-shrink: 0; }
+        .card-title { font-size: 0.98rem; font-weight: 600; color: #0f172a; }
+        .card-desc { font-size: 0.8rem; color: #1e293b; line-height: 1.45; }
+        .card-meta { font-size: 0.72rem; color: #0369a1; margin-top: 0.15rem; }
+        .pills { margin-top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .pill { font-size: 0.7rem; padding: 0.12rem 0.5rem; border-radius: 999px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; }
+        .pill.muted { color: #94a3b8; }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin: 1.5rem auto; max-width: 920px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin: 1.5rem auto; max-width: 1040px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 1.5rem auto; }
+
+        .comparison-container { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0; }
+        .comparison-card { width: 420px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; text-align: left; }
+        .comparison-card.highlight { border: 2px solid #0369a1; background: rgba(3,105,161,0.02); }
+        .comparison-card.dim { border-color: #dc2626; background: rgba(220,38,38,0.02); }
+        .comparison-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+        .comparison-title { font-size: 1.05rem; font-weight: 600; }
+        .comparison-card.highlight .comparison-title { color: #0369a1; }
+        .comparison-card.dim .comparison-title { color: #dc2626; }
+        .comparison-list { list-style: none; }
+        .comparison-list li { padding: 0.4rem 0; font-size: 0.88rem; color: #1e293b; display: flex; align-items: flex-start; gap: 0.6rem; }
+        .check { color: #059669; flex-shrink: 0; margin-top: 2px; }
+        .cross { color: #dc2626; flex-shrink: 0; margin-top: 2px; }
+
+        .pillar-container { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .pillar { width: 170px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.1rem; text-align: center; transition: border-color 0.2s ease, transform 0.2s ease; }
+        .pillar:hover { border-color: #0369a1; transform: translateY(-4px); }
+        .pillar-icon { width: 44px; height: 44px; margin: 0 auto 0.6rem; border-radius: 10px; background: rgba(3,105,161,0.08); display: flex; align-items: center; justify-content: center; color: #0369a1; }
+        .pillar-title { font-size: 0.72rem; font-weight: 600; color: #0369a1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+        .pillar-desc { font-size: 0.78rem; color: #1e293b; line-height: 1.35; }
+
+        .stat { text-align: center; }
+        .stat-value { font-size: 2.6rem; font-weight: 700; line-height: 1; }
+        .stat-value.negative { color: #dc2626; }
+        .stat-value.positive { color: #0369a1; }
+        .stat-value.purple { color: #7c3aed; }
+        .stat-label { font-size: 0.85rem; color: #1e293b; margin-top: 0.3rem; }
+
+        .transition-box { text-align: center; padding: 1.1rem 1.4rem; border-radius: 12px; }
+        .transition-box.dim { background: #ffffff; border: 1px solid #e2e8f0; opacity: 0.65; }
+        .transition-box.highlight { background: rgba(3,105,161,0.05); border: 2px solid #0369a1; }
+        .transition-arrow { color: #0369a1; display: flex; align-items: center; }
+
+        /* Convergence diagram */
+        .converge { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; margin: 1.5rem auto; max-width: 980px; }
+        .converge-col { display: flex; flex-direction: column; gap: 0.6rem; }
+        .converge-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.55rem 0.8rem; font-size: 0.82rem; color: #334155; text-align: left; display: flex; align-items: center; gap: 0.5rem; }
+        .converge-core { background: linear-gradient(135deg, rgba(3,105,161,0.12) 0%, rgba(124,58,237,0.12) 100%); border: 2px solid #0369a1; border-radius: 14px; padding: 1.25rem 1rem; text-align: center; width: 220px; }
+        .converge-core .t { font-weight: 700; color: #0f172a; font-size: 1.05rem; margin-bottom: 0.4rem; }
+        .converge-core .s { font-size: 0.78rem; color: #0369a1; line-height: 1.4; }
+
+        /* Timeline bars */
+        .timeline { max-width: 940px; margin: 1.5rem auto; display: flex; flex-direction: column; gap: 0.7rem; }
+        .tl-row { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 1rem; }
+        .tl-era { text-align: right; }
+        .tl-era .y { font-weight: 700; color: #0f172a; font-size: 0.95rem; }
+        .tl-era .n { font-size: 0.72rem; color: #64748b; }
+        .tl-bar-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; height: 44px; display: flex; align-items: center; overflow: hidden; }
+        .tl-bar { height: 100%; display: flex; align-items: center; padding: 0 0.9rem; color: #fff; font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
+        .tl-ex { font-size: 0.72rem; color: #64748b; margin-left: 0.6rem; }
+
+        /* Map / geo bars */
+        .geo-bar-row { display: grid; grid-template-columns: 110px 1fr 56px; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+        .geo-bar-track { background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; height: 22px; overflow: hidden; }
+        .geo-bar-fill { height: 100%; border-radius: 999px; }
+        .geo-label { text-align: right; font-size: 0.85rem; font-weight: 600; color: #0f172a; }
+        .geo-pct { text-align: left; font-size: 0.85rem; font-weight: 700; color: #0369a1; }
+
+        .nav { position: fixed; bottom: 24px; right: 24px; display: flex; gap: 8px; z-index: 100; }
+        .nav button { background: #fff; border: 1px solid #e2e8f0; color: #1e293b; width: 44px; height: 44px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: border-color 0.2s ease, background 0.2s ease; display: flex; align-items: center; justify-content: center; }
+        .nav button:hover { background: rgba(3,105,161,0.05); border-color: #0369a1; color: #0369a1; }
+        .nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #0369a1, #7c3aed); transition: width 0.3s ease; z-index: 100; }
+        .counter { position: fixed; bottom: 28px; left: 24px; font-size: 0.8rem; color: #64748b; z-index: 100; }
+        .hint { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #94a3b8; z-index: 100; }
+        .fullscreen-btn { position: fixed; top: 16px; right: 16px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; transition: border-color 0.2s ease; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .fullscreen-btn:hover { border-color: #0369a1; color: #0369a1; }
+
+        [data-tooltip] { position: relative; cursor: help; }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+            background: #0f172a; color: #e2e8f0; padding: 0.7rem 1rem; border-radius: 8px;
+            font-size: 0.78rem; line-height: 1.5; max-width: 280px; width: max-content; text-align: left;
+            opacity: 0; visibility: hidden; transition: opacity 0.2s ease; z-index: 1000; pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        [data-tooltip]:hover::after { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <i data-lucide="maximize-2" style="width: 18px; height: 18px;"></i>
+    </button>
+
+    <div class="presentation" id="presentation">
+
+        <!-- 1. Title -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #0369a1; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1.25rem; font-weight: 500;">Competitive Intelligence</p>
+                <h1>The AI Analytics Landscape</h1>
+                <div class="divider"></div>
+                <p class="subtitle" style="font-size: 1.4rem;">Who's building what — and what KOS should be</p>
+                <p style="margin-top: 1rem; font-size: 1rem; color: #1e293b; line-height: 1.6;">A field map of ~65 platforms across BI, AI analytics, governance & the graveyard</p>
+                <div style="margin-top: 2.25rem; display: flex; justify-content: center; gap: 2.5rem;">
+                    <div class="stat"><div class="stat-value positive">65</div><div class="stat-label">platforms analyzed</div></div>
+                    <div class="stat"><div class="stat-value purple">11</div><div class="stat-label">categories mapped</div></div>
+                    <div class="stat"><div class="stat-value negative">8</div><div class="stat-label">in the graveyard</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. What we did -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>What We Mapped</h2>
+                <p class="subtitle">Every serious player KOS could meet — incumbents, startups, and the dead</p>
+                <div class="grid-3">
+                    <div class="card highlight">
+                        <div class="card-header"><div class="card-icon"><i data-lucide="search" class="icon"></i></div><div class="card-title">Analyzed</div></div>
+                        <div class="card-desc">~65 platforms — from $9B incumbents to solo-founder tools — read product, pricing, funding, sources, user reviews.</div>
+                    </div>
+                    <div class="card highlight">
+                        <div class="card-header"><div class="card-icon"><i data-lucide="layout-grid" class="icon"></i></div><div class="card-title">Categorized</div></div>
+                        <div class="card-desc">Tagged each by capability, architecture, audience & business model — then derived the shared patterns.</div>
+                    </div>
+                    <div class="card highlight">
+                        <div class="card-header"><div class="card-icon"><i data-lucide="skull" class="icon"></i></div><div class="card-title">Autopsied</div></div>
+                        <div class="card-desc">Studied the graveyard — who died, who got bought, and exactly why — to find the survival blueprint.</div>
+                    </div>
+                </div>
+                <p class="emphasis">The goal: find the bloodiest waters — and the open ones.</p>
+            </div>
+        </div>
+
+        <!-- 3. How we categorized -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2>How We Categorized Them</h2>
+                <p class="subtitle">Eleven buckets — from legacy incumbents to the dead</p>
+                <div class="grid-4" style="max-width: 1080px;">
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Traditional BI</div><div class="card-meta">incumbents, dashboard-first</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Enterprise Data Platforms</div><div class="card-meta">warehouses + NL on top</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Cloud-Native BI</div><div class="card-meta">modern, semantic-layer</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Modern Analytics</div><div class="card-meta">notebooks & spreadsheets</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Embedded Analytics</div><div class="card-meta">white-label / OEM</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">AI Analytics Startups</div><div class="card-meta">NL-native, the new wave</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Text-to-SQL / OSS</div><div class="card-meta">engines & frameworks</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Open-Source BI</div><div class="card-meta">community-driven</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Data Governance</div><div class="card-meta">catalog / lineage — neighbor</div></div>
+                    <div class="card"><div class="card-title" style="color:#0369a1;">Adjacent / Workflow</div><div class="card-meta">app builders, semantic layer</div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Graveyard</div><div class="card-meta">dead or acqui-hired</div></div>
+                    <div class="card" style="background:rgba(3,105,161,0.05);border:2px dashed #0369a1;"><div class="card-title" style="color:#0369a1;">+ KOS</div><div class="card-meta">where it all converges</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">Then re-tagged by the axes that actually differentiate: source breadth · semantic-layer · audience · read-vs-act.</p>
+            </div>
+        </div>
+
+        <!-- 4. The full cast -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>The Full Cast</h2>
+                <p class="subtitle">All ~65 platforms, grouped</p>
+                <div class="grid-3" style="max-width: 1100px; gap: 0.9rem;">
+                    <div class="card"><div class="card-title">Traditional BI</div><div class="pills"><span class="pill">Power BI</span><span class="pill">Tableau</span><span class="pill">Looker</span><span class="pill">Qlik</span><span class="pill">SAP SAC</span><span class="pill">Cognos</span><span class="pill">MicroStrategy</span><span class="pill">Sisense</span><span class="pill">Spotfire</span></div></div>
+                    <div class="card"><div class="card-title">Warehouse / Data Platforms</div><div class="pills"><span class="pill">Databricks Genie</span><span class="pill">Snowflake Cortex</span><span class="pill">BigQuery AI</span><span class="pill">QuickSight</span><span class="pill">Domo</span></div></div>
+                    <div class="card"><div class="card-title">Cloud-Native BI</div><div class="pills"><span class="pill">Sigma</span><span class="pill">ThoughtSpot</span><span class="pill">Omni</span><span class="pill">Lightdash</span><span class="pill">Count.co</span><span class="pill">Steep</span><span class="pill">Evidence.dev</span></div></div>
+                    <div class="card"><div class="card-title">Modern (notebooks / sheets)</div><div class="pills"><span class="pill">Hex</span><span class="pill">Deepnote</span><span class="pill">Quadratic</span><span class="pill">Equals</span></div></div>
+                    <div class="card"><div class="card-title">Embedded Analytics</div><div class="pills"><span class="pill">Luzmo</span><span class="pill">GoodData</span><span class="pill">Reveal</span></div></div>
+                    <div class="card highlight"><div class="card-title">AI Analytics Startups</div><div class="pills"><span class="pill">Julius</span><span class="pill">TextQL</span><span class="pill">Dot</span><span class="pill">Athena</span><span class="pill">Basedash</span><span class="pill">BlazeSQL</span><span class="pill">Supersimple</span><span class="pill">MindsDB</span><span class="pill">Defog</span><span class="pill">NLSQL</span><span class="pill">AI2SQL</span><span class="pill">AskYourDB</span></div></div>
+                    <div class="card"><div class="card-title">Text-to-SQL / OSS</div><div class="pills"><span class="pill">WrenAI</span><span class="pill">Vanna</span><span class="pill">Kanaries/RATH</span><span class="pill">Chat2DB</span></div></div>
+                    <div class="card"><div class="card-title">Open-Source BI</div><div class="pills"><span class="pill">Metabase</span><span class="pill">Superset/Preset</span><span class="pill">Redash</span><span class="pill">Grafana</span><span class="pill">DBeaver</span></div></div>
+                    <div class="card"><div class="card-title">Governance · Adjacent</div><div class="pills"><span class="pill">Collibra</span><span class="pill">Alation</span><span class="pill">Atlan</span><span class="pill">Monte Carlo</span><span class="pill">Retool</span><span class="pill">Cube.dev</span><span class="pill">Trevor.io</span></div></div>
+                </div>
+                <div class="card danger" style="max-width: 1100px; margin: 0.9rem auto 0; text-align:center;">
+                    <div class="card-title" style="color:#dc2626; display:inline; margin-right:0.5rem;">Graveyard</div>
+                    <span class="pill muted">DataGPT</span> <span class="pill muted">Seek AI</span> <span class="pill muted">Outerbase</span> <span class="pill muted">Rows</span> <span class="pill muted">Actiondesk</span> <span class="pill muted">PopSQL</span> <span class="pill muted">Hyperquery</span> <span class="pill muted">Zing Data</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. The convergence -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2>The Master Pattern: Everyone Is Converging</h2>
+                <p class="subtitle">From every direction, toward one identical product</p>
+                <div class="converge">
+                    <div class="converge-col">
+                        <div class="converge-item"><i data-lucide="database" style="width:16px;height:16px;color:#0369a1;"></i> Warehouses move <b>up</b> — Cortex, Genie, BigQuery AI</div>
+                        <div class="converge-item"><i data-lucide="bar-chart-3" style="width:16px;height:16px;color:#0369a1;"></i> BI tools add <b>AI/agents</b> — Sigma, ThoughtSpot, Metabase</div>
+                        <div class="converge-item"><i data-lucide="book-marked" style="width:16px;height:16px;color:#0369a1;"></i> Catalogs add <b>chat-with-data</b> — Atlan, Alation</div>
+                    </div>
+                    <div class="converge-core">
+                        <div class="t">The Center</div>
+                        <div class="s">Ask in NL · semantic grounding · agents that act · over MCP</div>
+                    </div>
+                    <div class="converge-col">
+                        <div class="converge-item"><i data-lucide="notebook-pen" style="width:16px;height:16px;color:#0369a1;"></i> Notebooks add <b>NL</b> — Hex, Deepnote</div>
+                        <div class="converge-item"><i data-lucide="blocks" style="width:16px;height:16px;color:#0369a1;"></i> App-builders add <b>AI/data</b> — Retool</div>
+                        <div class="converge-item"><i data-lucide="rocket" style="width:16px;height:16px;color:#0369a1;"></i> New startups <b>born here</b> — Julius, Dot, Steep, TextQL</div>
+                    </div>
+                </div>
+                <p class="emphasis">A feature checklist everyone has is not a moat — solo founders ship it.</p>
+            </div>
+        </div>
+
+        <!-- 6. Solution similarities -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>Solution-Wise, Everyone Ships the Same Stack</h2>
+                <p class="subtitle">The "modern" feature set is now table stakes — commodity</p>
+                <div class="grid-2" style="max-width: 960px;">
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="message-square" class="icon"></i></div><div class="card-title">Natural-language query</div></div><div class="card-desc">~everyone. <b>Commodity.</b></div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="plug-zap" class="icon"></i></div><div class="card-title">MCP support</div></div><div class="card-desc">Steep, Basedash, Metabase, Cube, TextQL, Dot, Atlan… becoming standard.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="layers" class="icon"></i></div><div class="card-title">Semantic / grounding layer</div></div><div class="card-desc">LookML · YAML · MDL · Ontology · Cube · dbt — the "trust" answer everyone copies.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="bot" class="icon"></i></div><div class="card-title">"Agentic" rebrand</div></div><div class="card-desc">ThoughtSpot, Sigma, MindsDB, Qlik, Dot, TextQL — marketing-converged.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="code-2" class="icon"></i></div><div class="card-title">Text-to-SQL core</div></div><div class="card-desc">Literally everyone. <b>Dead as a standalone</b> ($9/mo, solo-built, OSS, free).</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="puzzle" class="icon"></i></div><div class="card-title">Embedding + automation</div></div><div class="card-desc">White-label, Slack reports, schedules — common monetization & glue.</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">"We have NL / AI / MCP / a semantic layer" defends nothing.</p>
+            </div>
+        </div>
+
+        <!-- 7. Timeline -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2>When These Platforms Were Created</h2>
+                <p class="subtitle">Two big waves — and the second is happening right now</p>
+                <div class="timeline">
+                    <div class="tl-row">
+                        <div class="tl-era"><div class="y">≤ 1999</div><div class="n">legacy incumbents</div></div>
+                        <div class="tl-bar-wrap"><div class="tl-bar" style="width:19%; background:linear-gradient(90deg,#64748b,#94a3b8);">5</div><span class="tl-ex">Cognos '69 · MicroStrategy '89 · Qlik '93 · Spotfire '96</span></div>
+                    </div>
+                    <div class="tl-row">
+                        <div class="tl-era"><div class="y">2000–09</div><div class="n">early SaaS BI</div></div>
+                        <div class="tl-bar-wrap"><div class="tl-bar" style="width:15%; background:linear-gradient(90deg,#0891b2,#06b6d4);">4</div><span class="tl-ex">Tableau · Sisense · GoodData · Collibra</span></div>
+                    </div>
+                    <div class="tl-row">
+                        <div class="tl-era"><div class="y">2010–14</div><div class="n">cloud / big-data wave</div></div>
+                        <div class="tl-bar-wrap"><div class="tl-bar" style="width:50%; background:linear-gradient(90deg,#0369a1,#0ea5e9);">13</div><span class="tl-ex">Looker · Snowflake · Databricks · Power BI · ThoughtSpot · Sigma · Metabase</span></div>
+                    </div>
+                    <div class="tl-row">
+                        <div class="tl-era"><div class="y">2015–19</div><div class="n">modern / embedded / infra</div></div>
+                        <div class="tl-bar-wrap"><div class="tl-bar" style="width:62%; background:linear-gradient(90deg,#0369a1,#7c3aed);">16</div><span class="tl-ex">Hex · Deepnote · Atlan · Monte Carlo · Cube · Retool · MindsDB</span></div>
+                    </div>
+                    <div class="tl-row">
+                        <div class="tl-era"><div class="y">2020–24</div><div class="n">the AI-native explosion</div></div>
+                        <div class="tl-bar-wrap"><div class="tl-bar" style="width:100%; background:linear-gradient(90deg,#7c3aed,#db2777);">26</div><span class="tl-ex">Julius · TextQL · Steep · Dot · Quadratic · Defog · BlazeSQL · WrenAI · Vanna</span></div>
+                    </div>
+                </div>
+                <p class="emphasis">~40% of the entire field was founded in the last 5 years — mostly tiny AI-native startups.</p>
+            </div>
+        </div>
+
+        <!-- 8. Markets & Geography -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2>Markets &amp; Geography</h2>
+                <p class="subtitle">Where they're based — and who they sell to</p>
+                <div class="grid-2" style="max-width: 1000px; align-items: start;">
+                    <div class="card">
+                        <div class="card-header"><div class="card-icon"><i data-lucide="globe-2" class="icon"></i></div><div class="card-title">HQ geography</div></div>
+                        <div style="margin-top:0.6rem;">
+                            <div class="geo-bar-row"><div class="geo-label">USA</div><div class="geo-bar-track"><div class="geo-bar-fill" style="width:60%; background:linear-gradient(90deg,#0369a1,#0ea5e9);"></div></div><div class="geo-pct">~60%</div></div>
+                            <div class="geo-bar-row"><div class="geo-label">Europe</div><div class="geo-bar-track"><div class="geo-bar-fill" style="width:25%; background:linear-gradient(90deg,#7c3aed,#a855f7);"></div></div><div class="geo-pct">~25%</div></div>
+                            <div class="geo-bar-row"><div class="geo-label">Asia</div><div class="geo-bar-track"><div class="geo-bar-fill" style="width:9%; background:linear-gradient(90deg,#059669,#10b981);"></div></div><div class="geo-pct">~9%</div></div>
+                            <div class="geo-bar-row"><div class="geo-label">Canada / IL</div><div class="geo-bar-track"><div class="geo-bar-fill" style="width:6%; background:linear-gradient(90deg,#f97316,#fb923c);"></div></div><div class="geo-pct">~6%</div></div>
+                        </div>
+                        <div class="card-desc" style="margin-top:0.7rem;"><b>San Francisco Bay Area is the epicenter</b> — 20+ of the 65 (Databricks, Sigma, Hex, Julius, TextQL, Metabase, Atlan, Cube…). Europe's hubs: <b>Berlin · London · Stockholm</b>. Asia: <b>China · Taiwan · Singapore</b> (mostly OSS text-to-SQL).</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><div class="card-icon"><i data-lucide="briefcase" class="icon"></i></div><div class="card-title">Markets mainly covered</div></div>
+                        <div class="pills" style="margin-top:0.5rem;">
+                            <span class="pill" style="background:rgba(3,105,161,0.1);border-color:#0369a1;color:#0369a1;">Financial Services &amp; Insurance</span>
+                            <span class="pill" style="background:rgba(3,105,161,0.1);border-color:#0369a1;color:#0369a1;">Tech / SaaS</span>
+                            <span class="pill">Healthcare / Pharma</span>
+                            <span class="pill">Manufacturing / Energy</span>
+                            <span class="pill">Government / Defense</span>
+                            <span class="pill">Retail / CPG</span>
+                            <span class="pill">Education</span>
+                            <span class="pill">Telecom / Airlines</span>
+                        </div>
+                        <div class="card-desc" style="margin-top:0.8rem;">
+                            <b>Enterprise &amp; governance</b> cluster in <b>regulated verticals</b> — finance, insurance, healthcare, manufacturing (driven by compliance).<br><br>
+                            <b>AI-native startups</b> concentrate on <b>Tech / SaaS GTM &amp; finance teams</b> — their easy early adopters. A few go vertical: Athena (legal/finance), NLSQL (healthcare), Spotfire (pharma/industrial), Quadratic (fintech).<br><br>
+                            Customer geography skews <b>US-first (~70%+)</b>; OSS (Metabase, Superset) over-indexes in <b>India, Brazil &amp; LATAM</b>.
+                        </div>
+                    </div>
+                </div>
+                <p class="emphasis" style="font-size:1.15rem;">A US-built, SF-centered, finance-&amp;-SaaS-targeted market — with verticals largely unclaimed.</p>
+            </div>
+        </div>
+
+        <!-- 9. Red markets -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2>Markets Already Picked Clean</h2>
+                <p class="subtitle">Red oceans — entering these is a graveyard</p>
+                <div class="grid-3" style="max-width: 1060px;">
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Text-to-SQL (standalone)</div><div class="card-desc">$9/mo, solo-built, OSS, free in every warehouse. Vanna: 23.6K stars → $330K rev → archived. <b>"stars ≠ business."</b></div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">SQL editors / DB clients</div><div class="card-desc">Consolidating into databases. PopSQL→Timescale, Outerbase→Cloudflare, Redash→Databricks.</div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Spreadsheet-data hybrids</div><div class="card-desc">Rows→Superhuman/Coda, Actiondesk→Datadog, Equals (hosts you on Snowflake).</div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Open-source BI</div><div class="card-desc">Adoption-rich, revenue-poor. Metabase: 50K orgs → $13M ARR. Free self-host caps pricing.</div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Warehouse-native NL BI</div><div class="card-desc">Cortex + Genie + BigQuery + Sigma + ThoughtSpot + Steep… and the warehouses give it away.</div></div>
+                    <div class="card danger"><div class="card-title" style="color:#dc2626;">Pre-AI no-code BI</div><div class="card-desc">Dead. Zing (shut down), Trevor.io (stagnant, founders fled).</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">The crowded center is where companies go to die.</p>
+            </div>
+        </div>
+
+        <!-- 10. The graveyard -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2>How They Die — Three Failure Modes</h2>
+                <p class="subtitle">Every corpse: a tiny team with a narrow, commoditizable core</p>
+                <div class="grid-3" style="max-width: 1060px;">
+                    <div class="card danger">
+                        <div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="trending-down" class="icon"></i></div><div class="card-title">Died — no moat</div></div>
+                        <div class="card-desc"><b>DataGPT</b> (pricing suicide — killed its $99 tier), <b>Zing</b> (couldn't raise), <b>Trevor</b> (no AI, stagnant).</div>
+                    </div>
+                    <div class="card danger">
+                        <div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="package" class="icon"></i></div><div class="card-title">Acqui-hired for tech</div></div>
+                        <div class="card-desc"><b>Seek→IBM</b>, <b>Outerbase→Cloudflare</b>, <b>Redash→Databricks</b>, <b>PopSQL→Timescale</b>, <b>Hyperquery→Deepnote</b>. Bought for parts.</div>
+                    </div>
+                    <div class="card danger">
+                        <div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="combine" class="icon"></i></div><div class="card-title">Consolidated into a suite</div></div>
+                        <div class="card-desc"><b>Rows→Superhuman/Coda</b> — profitable, 2.2M users, <b>still</b> shut down. Even winners get absorbed.</div>
+                    </div>
+                </div>
+                <div class="comparison-container" style="margin-top:1rem;">
+                    <div class="card" style="max-width:880px; text-align:center; background:rgba(3,105,161,0.04); border-color:#0369a1;">
+                        <div class="card-desc" style="font-size:0.95rem; color:#0f172a;">The unifying lesson: <b>narrow + tiny + commoditizable (text-to-SQL / SQL editor / spreadsheet) = dead or bought for parts.</b> Best-in-class accuracy didn't save them — Seek had a world-record SQL model and still got absorbed.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. How they approach moat -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h2>How Competitors Build a Moat</h2>
+                <p class="subtitle">What actually holds — and what doesn't</p>
+                <div class="comparison-container">
+                    <div class="comparison-card highlight">
+                        <div class="comparison-header"><i data-lucide="shield-check" class="icon-lg" style="color:#0369a1;"></i><div class="comparison-title">Durable moats</div></div>
+                        <ul class="comparison-list">
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> <b>Distribution / installed base</b> — Power BI, Tableau, Looker, Metabase. <i>Neutralize AI via reach + price.</i></li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> <b>Data gravity</b> — Cortex, Genie, BigQuery, SAP. "Your data already lives here." (Also their cage.)</li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> <b>Vertical / domain depth</b> — Spotfire (pharma), Athena (legal/finance).</li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> <b>Workflow stickiness</b> — Sigma apps, Retool tools, Domo pipelines.</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card dim">
+                        <div class="comparison-header"><i data-lucide="shield-off" class="icon-lg" style="color:#dc2626;"></i><div class="comparison-title">Weak / failed moats</div></div>
+                        <ul class="comparison-list">
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> <b>Proprietary accuracy model</b> — Seek, Defog. Commoditizes fast; both bought/tiny.</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> <b>Semantic-layer ownership</b> — being auto-generated &amp; commoditized (Atlan, Cube).</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> <b>Open-source community</b> — adoption ≠ revenue ("stars ≠ business").</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> <b>"We do NL/AI/MCP"</b> — table stakes a solo dev ships.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">The real moats are distribution, data-gravity, vertical depth & platform-breadth.</p>
+            </div>
+        </div>
+
+        <!-- 12. Blue spaces -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2>The Air That's Still Open</h2>
+                <p class="subtitle">The gaps nobody fully owns</p>
+                <div class="pillar-container">
+                    <div class="pillar" data-tooltip="Nobody does the full combo: SQL + NoSQL + files/docs/unstructured + NL + business-user. Athena misses NoSQL; Deepnote is a notebook; Metabase is dashboard-first.">
+                        <div class="pillar-icon"><i data-lucide="boxes" class="icon-lg"></i></div>
+                        <div class="pillar-title">Source-Agnostic</div>
+                        <div class="pillar-desc">NoSQL + files/docs + heterogeneous, in one NL layer</div>
+                    </div>
+                    <div class="pillar" data-tooltip="NL → native slides. Rare — only Dot, Athena, KOS. Most stop at dashboards.">
+                        <div class="pillar-icon"><i data-lucide="presentation" class="icon-lg"></i></div>
+                        <div class="pillar-title">NL → Presentations</div>
+                        <div class="pillar-desc">Ask a question, get a slide deck</div>
+                    </div>
+                    <div class="pillar" data-tooltip="Agents that take actions across systems — for accessible/mid-market, no-code. Contested only at enterprise end (TextQL, Athena) and from app-builders (Retool).">
+                        <div class="pillar-icon"><i data-lucide="zap" class="icon-lg"></i></div>
+                        <div class="pillar-title">Ask + Act</div>
+                        <div class="pillar-desc">Accessible, no-code automation &amp; actions</div>
+                    </div>
+                    <div class="pillar" data-tooltip="Analytics business-logic knowledge (not governance metadata) — an unowned gap between governance tools and BI.">
+                        <div class="pillar-icon"><i data-lucide="brain" class="icon-lg"></i></div>
+                        <div class="pillar-title">Org Knowledge</div>
+                        <div class="pillar-desc">A brain that learns the business</div>
+                    </div>
+                    <div class="pillar" data-tooltip="Most durable moat — and the least claimed. A real-estate / rental-pricing analytics brain is far more defensible than 'general NL BI'.">
+                        <div class="pillar-icon"><i data-lucide="building" class="icon-lg"></i></div>
+                        <div class="pillar-title">Vertical Depth</div>
+                        <div class="pillar-desc">Own a market, not a feature</div>
+                    </div>
+                </div>
+                <p class="emphasis">The center is a red ocean. The edges are wide open.</p>
+            </div>
+        </div>
+
+        <!-- 13. KOS wedge -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content">
+                <h2>What KOS Should Be</h2>
+                <p class="subtitle">The landscape dictates it: KOS sits at the center everyone is racing to, so it can't be built on features. It must be built on the edges incumbents structurally can't follow.</p>
+                <div class="grid-2" style="max-width: 940px;">
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="boxes" class="icon"></i></div><div class="card-title">Be source-agnostic</div></div><div class="card-desc">NoSQL + files + docs + heterogeneous — warehouse-locked rivals <b>can't copy without leaving their cage.</b> The one wedge that survives against everyone.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="layers-3" class="icon"></i></div><div class="card-title">Be a platform, not a feature</div></div><div class="card-desc">Ask <b>+ Act + Present + Learn</b>. The graveyard's verdict: narrow = acqui-hired; broad = survives.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="users" class="icon"></i></div><div class="card-title">Stay accessible</div></div><div class="card-desc">Never kill the affordable tier (DataGPT's cause of death). Enterprise-only minnows die; the consumer/accessible ones (Julius) thrive.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="badge-check" class="icon"></i></div><div class="card-title">Earn trust without the tax</div></div><div class="card-desc">No semantic-layer authoring — answer trust with <b>confidence + transparency</b> (Seek's way), or plug into Cube/Atlan via MCP.</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">Source-agnostic + unstructured, packaged as an accessible ask-<b>AND</b>-act platform — not a warehouse-locked NL feature.</p>
+            </div>
+        </div>
+
+        <!-- 14. Closing -->
+        <div class="slide" data-slide="14">
+            <div class="slide-content">
+                <h2 style="font-size: 2.6rem;">The Landscape in One Line</h2>
+                <div class="divider"></div>
+                <div style="max-width: 820px; margin: 1.5rem auto;">
+                    <p style="font-size: 1.35rem; line-height: 1.7; color:#0f172a;">
+                        The <strong style="color:#0369a1;">center</strong> — natural-language analytics — is a <strong style="color:#dc2626;">red ocean</strong> everyone is flooding into.
+                    </p>
+                    <p style="font-size: 1.35rem; line-height: 1.7; color:#0f172a; margin-top: 1rem;">
+                        The durable moats are <strong>distribution, data-gravity, vertical depth & platform-breadth</strong> — and KOS can only hold the last two.
+                    </p>
+                </div>
+                <div class="transition-box highlight" style="max-width: 760px; margin: 1.5rem auto;">
+                    <p style="font-size: 1.1rem; color:#0369a1; font-weight:600; line-height:1.6;">So KOS's survival = source-agnostic + unstructured breadth, as an accessible ask-and-act platform — ideally pointed at a vertical it can own.</p>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color:#64748b;">65 platforms mapped · 8 in the graveyard · the edges are wide open.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="counter" id="counter">1 / 14</div>
+    <div class="hint">Use arrow keys or click to navigate</div>
+
+    <div class="nav">
+        <button id="prevBtn" onclick="prevSlide()" disabled><i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i></button>
+        <button id="nextBtn" onclick="nextSlide()"><i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i></button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let currentSlide = 1;
+        const totalSlides = 14;
+
+        function showSlide(n, updateHash = true) {
+            if (n < 1) n = 1;
+            if (n > totalSlides) n = totalSlides;
+            currentSlide = n;
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+                if (parseInt(slide.dataset.slide) === n) slide.classList.add('active');
+            });
+            document.getElementById('progress').style.width = (n / totalSlides) * 100 + '%';
+            document.getElementById('counter').textContent = `${n} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = n === 1;
+            document.getElementById('nextBtn').disabled = n === totalSlides;
+            if (updateHash) history.pushState(null, null, `#slide-${n}`);
+        }
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        window.addEventListener('popstate', () => {
+            const s = getSlideFromHash();
+            if (s) showSlide(s, false);
+        });
+        function getSlideFromHash() {
+            const m = window.location.hash.match(/^#slide-(\d+)$/);
+            if (m) { const num = parseInt(m[1]); if (num >= 1 && num <= totalSlides) return num; }
+            return null;
+        }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight': case ' ': case 'Enter': nextSlide(); break;
+                case 'ArrowLeft': case 'Backspace': prevSlide(); break;
+                case 'Home': showSlide(1); break;
+                case 'End': showSlide(totalSlides); break;
+                case 'f': case 'F': toggleFullscreen(); break;
+                case 'Escape': if (document.fullscreenElement) document.exitFullscreen(); break;
+            }
+        });
+        document.getElementById('presentation').addEventListener('click', (e) => {
+            const x = e.clientX, width = window.innerWidth;
+            if (x < width / 3) prevSlide();
+            else if (x > width * 2 / 3) nextSlide();
+        });
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : prevSlide();
+        });
+        const initialSlide = getSlideFromHash() || 1;
+        showSlide(initialSlide, false);
+        if (!window.location.hash) history.replaceState(null, null, `#slide-1`);
+    </script>
+</body>
+</html>

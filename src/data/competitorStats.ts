@@ -1,29 +1,5 @@
 import type { Competitor } from "./competitors";
 
-/** Parse a funding string like "$674M+" or "$7B+" into a number in millions */
-function parseFundingM(funding: string): number {
-  // Skip public companies / N/A / bootstrapped
-  if (/public|part of|n\/a|bootstrapped|self-funded|no known|not disclosed|won paddle/i.test(funding)) return 0;
-  // Find patterns like $674M, $7B, $22M, EUR 8M, $141-$350M
-  const matches = funding.match(/\$?([\d,.]+)\s*(B|M|K)/gi);
-  if (!matches) return 0;
-  let max = 0;
-  for (const m of matches) {
-    const numMatch = m.match(/([\d,.]+)\s*(B|M|K)/i);
-    if (!numMatch) continue;
-    const num = parseFloat(numMatch[1].replace(/,/g, ""));
-    const unit = numMatch[2].toUpperCase();
-    const val = unit === "B" ? num * 1000 : unit === "K" ? num / 1000 : num;
-    if (val > max) max = val;
-  }
-  return max;
-}
-
-function formatFundingTotal(totalM: number): string {
-  if (totalM >= 1000) return `$${(totalM / 1000).toFixed(1).replace(/\.0$/, "")}B+`;
-  return `$${Math.round(totalM)}M+`;
-}
-
 /** Count how many competitors have a given dimension */
 function dimCount(competitors: Competitor[], dim: string): number {
   return competitors.filter((c) => c.dimensions.includes(dim)).length;
@@ -58,6 +34,11 @@ function rarestKosDimension(competitors: Competitor[]): { dim: string; count: nu
   return rarest;
 }
 
+function formatFundingTotal(totalM: number): string {
+  if (totalM >= 1000) return `$${(totalM / 1000).toFixed(1).replace(/\.0$/, "")}B+`;
+  return `$${Math.round(totalM)}M+`;
+}
+
 export function computeStats(competitors: Competitor[]) {
   const active = competitors.filter((c) => c.status === "active");
   const dead = competitors.filter((c) => c.status !== "active");
@@ -65,7 +46,7 @@ export function computeStats(competitors: Competitor[]) {
   const t3 = competitors.filter((c) => c.threat === 3);
 
   // Combined funding (active, non-public only)
-  const totalFundingM = active.reduce((sum, c) => sum + parseFundingM(c.funding), 0);
+  const totalFundingM = active.reduce((sum, c) => sum + (c.funding.totalRaisedM ?? 0), 0);
 
   // Count unique categories
   const catSet = new Set(competitors.map((c) => c.category));

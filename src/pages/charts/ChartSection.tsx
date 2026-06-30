@@ -4,12 +4,14 @@ export function ChartSection({
   howToRead,
   insight,
   children,
+  drillDown,
 }: {
   title: string;
   measures: string;
   howToRead: string;
   insight: string;
   children: React.ReactNode;
+  drillDown?: React.ReactNode;
 }) {
   return (
     <div className="mb-10">
@@ -28,7 +30,11 @@ export function ChartSection({
           <p className="text-text-muted mt-1">{insight}</p>
         </div>
       </div>
-      <div className="rounded-xl border border-border bg-white p-4">{children}</div>
+      <div className="rounded-xl border border-border bg-white p-4">
+        <p className="text-[10px] text-text-muted mb-1 italic">Click any data point to drill down into the underlying companies</p>
+        {children}
+        {drillDown}
+      </div>
     </div>
   );
 }

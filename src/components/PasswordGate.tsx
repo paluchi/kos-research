@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 
-const PASSWORD = "kos2026";
+const PASSWORD = "K0s!r3s34rch#2026";
 
 export function PasswordGate({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState(

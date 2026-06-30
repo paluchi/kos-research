@@ -5,6 +5,8 @@ import { competitors, categories } from "../data/competitors";
 import { computeStats } from "../data/competitorStats";
 import { CompetitorCard } from "./CompetitorCard";
 import { CompetitorModal } from "./CompetitorModal";
+import { downloadCompetitorsMarkdown } from "./exportMarkdown";
+import { Download } from "lucide-react";
 import type { Competitor } from "../data/competitors";
 
 type StatusFilter = "all" | "active" | "dead" | "acquired" | "maintenance";
@@ -45,12 +47,22 @@ export function CompetitorsPage() {
 
   return (
     <>
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold text-text mb-3">Competitive Analysis</h1>
-        <p className="text-text-muted">
-          Deep research on {competitors.length} competitors across {categories.length} categories
-          — funding, revenue, product, weaknesses, and sources.
-        </p>
+      <header className="mb-10 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-text mb-3">Competitive Analysis</h1>
+          <p className="text-text-muted">
+            Deep research on {competitors.length} competitors across {categories.length} categories
+            — funding, revenue, product, weaknesses, and sources.
+          </p>
+        </div>
+        <button
+          onClick={() => downloadCompetitorsMarkdown(competitors, categories)}
+          title="Export all competitor data + notes as Markdown"
+          className="shrink-0 inline-flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-accent text-white hover:opacity-90 transition-opacity"
+        >
+          <Download size={16} />
+          Export Markdown
+        </button>
       </header>
 
       {/* Market snapshot */}

@@ -1,67 +1,141 @@
-import Highcharts from "highcharts";
+import { useState, useRef, useMemo } from "react";
+import Highcharts from "./hc";
 import { HighchartsReact } from "highcharts-react-official";
-import HeatmapModule from "highcharts/modules/heatmap.js";
-import { competitors } from "../../data/competitors";
-import { dimHeatmapData, dimCooccurrenceData, dimAdoptionData } from "../../data/insightData";
+import "./patchHighcharts";
+import { competitors, type Competitor } from "../../data/competitors";
+import {
+  dimHeatmapData, dimCooccurrenceData, dimAdoptionData, DIM_DESCRIPTIONS,
+  heatmapInsight, adoptionInsight, cooccurrenceInsight,
+} from "../../data/insightData";
 import { ChartSection } from "./ChartSection";
+import { DrillDownPanel } from "./DrillDownPanel";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const initHeatmap = (HeatmapModule as any).default || HeatmapModule;
-if (typeof initHeatmap === "function") initHeatmap(Highcharts);
+/* ── Floating tooltip singleton for axis labels ─── */
+const dimTip = (() => {
+  let el: HTMLDivElement | null = null;
+  function getEl() {
+    if (!el) {
+      el = document.createElement("div");
+      Object.assign(el.style, {
+        position: "fixed", display: "none", pointerEvents: "none", zIndex: "99999",
+        background: "#1e293b", color: "#fff", fontSize: "12px", lineHeight: "1.4",
+        padding: "6px 10px", borderRadius: "6px", maxWidth: "300px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.25)", whiteSpace: "normal",
+      });
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  return {
+    show(text: string, x: number, y: number) {
+      const t = getEl();
+      t.textContent = text;
+      t.style.display = "block";
+      t.style.left = `${x + 14}px`;
+      t.style.top = `${y - 36}px`;
+    },
+    hide() { if (el) el.style.display = "none"; },
+  };
+})();
 
-const COLORS = {
-  accent: "#6366f1",
-  red: "#ef4444",
-  green: "#22c55e",
-  amber: "#f59e0b",
-  blue: "#3b82f6",
-};
+const COLORS = { green: "#22c55e", amber: "#f59e0b", red: "#ef4444" };
+const allActive = competitors.filter(c => c.status === "active");
+
+interface DrillState { label: string; items: Competitor[] }
 
 /* ── 1. Dimension Coverage Heatmap ───────────────── */
 
-export function DimensionHeatmap() {
-  const { categories, dimensions, data } = dimHeatmapData(competitors);
+const heatmapMeta = dimHeatmapData(competitors);
 
-  const options: Highcharts.Options = {
-    chart: { type: "heatmap", height: 420 },
+export function DimensionHeatmap({ onSelect }: { onSelect: (c: Competitor) => void }) {
+  const { categories, dimensions, data } = heatmapMeta;
+  const [drill, setDrill] = useState<DrillState | null>(null);
+  const drillRef = useRef(setDrill);
+  drillRef.current = setDrill;
+
+  const options = useMemo<Highcharts.Options>(() => ({
+    chart: {
+      type: "heatmap",
+      height: 420,
+      events: {
+        load: function () {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const axis = this.xAxis[0] as any;
+          if (!axis.ticks) return;
+          Object.values(axis.ticks).forEach((tick: unknown) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const t = tick as any;
+            const labelEl = t.label?.element as SVGElement | HTMLElement | undefined;
+            if (!labelEl) return;
+            const dim = dimensions[t.pos] as string | undefined;
+            if (!dim) return;
+            const desc = DIM_DESCRIPTIONS[dim];
+            if (!desc) return;
+            labelEl.style.cursor = "help";
+            labelEl.addEventListener("mouseenter", (e: Event) => {
+              const me = e as MouseEvent;
+              dimTip.show(desc, me.clientX, me.clientY);
+            });
+            labelEl.addEventListener("mousemove", (e: Event) => {
+              const me = e as MouseEvent;
+              dimTip.show(desc, me.clientX, me.clientY);
+            });
+            labelEl.addEventListener("mouseleave", () => dimTip.hide());
+          });
+        },
+      },
+    },
     title: { text: undefined },
     xAxis: {
       categories: dimensions,
-      labels: { style: { fontSize: "10px" }, rotation: -45 },
+      labels: {
+        rotation: -45,
+        style: { fontSize: "10px" },
+      },
     },
-    yAxis: {
-      categories,
-      labels: { style: { fontSize: "10px" } },
-      title: { text: undefined },
-      reversed: true,
-    },
+    yAxis: { categories, labels: { style: { fontSize: "10px" } }, title: { text: undefined }, reversed: true },
     colorAxis: {
       min: 0, max: 100,
       stops: [[0, "#f0f9ff"], [0.3, "#93c5fd"], [0.6, "#f59e0b"], [1, "#ef4444"]],
     },
     legend: { align: "right", layout: "vertical", verticalAlign: "middle" },
     tooltip: {
-      formatter: function (this: Highcharts.Point): string {
-        const p = this as unknown as { point: { x: number; y: number; value: number } };
-        return `<b>${categories[p.point.y]}</b><br/>${dimensions[p.point.x]}: <b>${p.point.value}%</b> adoption`;
+      formatter: function (): string {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const p = this as any;
+        return `<b>${categories[p.y]}</b><br/>${dimensions[p.x]}: <b>${p.value}%</b><br/><i>Click to drill down</i>`;
+      },
+    },
+    plotOptions: {
+      heatmap: {
+        cursor: "pointer",
+        point: {
+          events: {
+            click: function () {
+              const pt = this as Highcharts.Point;
+              const cat = categories[pt.y!];
+              const dim = dimensions[pt.x!];
+              const items = allActive.filter(c => c.category === cat && c.dimensions.includes(dim));
+              drillRef.current({ label: `${cat} → ${dim}`, items });
+            },
+          },
+        },
       },
     },
     series: [{
-      type: "heatmap",
-      data,
-      borderWidth: 1,
-      borderColor: "#fff",
+      type: "heatmap", data, borderWidth: 1, borderColor: "#fff",
       dataLabels: { enabled: true, format: "{point.value}%", style: { fontSize: "9px", textOutline: "none" } },
     }],
     credits: { enabled: false },
-  };
+  }), [categories, dimensions, data]);
 
   return (
     <ChartSection
       title="1. Dimension Coverage Heatmap — Red vs Blue Ocean Map"
       measures="Percentage of competitors in each category that offer each KOS dimension. Each cell = (competitors with feature / total in category) × 100."
       howToRead="Hot cells (red/amber) = saturated features everyone offers (red ocean). Cool cells (blue/white) = features nobody in that category provides (blue ocean opportunity)."
-      insight="SQL + Dashboards + Web-based are table stakes across all categories (100% red). Presentations, NoSQL, and Knowledge are almost universally cold — these are KOS's blue ocean moat."
+      insight={heatmapInsight(competitors)}
+      drillDown={drill && <DrillDownPanel {...drill} onClose={() => setDrill(null)} onSelect={onSelect} />}
     >
       <HighchartsReact highcharts={Highcharts} options={options} />
     </ChartSection>
@@ -70,39 +144,62 @@ export function DimensionHeatmap() {
 
 /* ── 4. Dimension Adoption Bar ───────────────────── */
 
-export function DimensionAdoptionBar() {
-  const data = dimAdoptionData(competitors);
+const adoptionData = dimAdoptionData(competitors);
 
-  const options: Highcharts.Options = {
+export function DimensionAdoptionBar({ onSelect }: { onSelect: (c: Competitor) => void }) {
+  const [drill, setDrill] = useState<DrillState | null>(null);
+  const drillRef = useRef(setDrill);
+  drillRef.current = setDrill;
+
+  const options = useMemo<Highcharts.Options>(() => ({
     chart: { type: "bar", height: 400 },
     title: { text: undefined },
-    xAxis: { categories: data.map(d => d.dim), labels: { style: { fontSize: "11px" } } },
+    xAxis: {
+      categories: adoptionData.map(d => d.dim),
+      labels: {
+        useHTML: true,
+        style: { fontSize: "11px" },
+        formatter: function (): string {
+          const dim = this.value as string;
+          const desc = DIM_DESCRIPTIONS[dim] || dim;
+          return `<span title="${desc}" style="cursor:help">${dim}</span>`;
+        },
+      },
+    },
     yAxis: { title: { text: "Active competitors" }, allowDecimals: false },
-    tooltip: { pointFormat: "<b>{point.y}</b> competitors ({point.pct}%)" },
+    tooltip: { pointFormat: "<b>{point.y}</b> competitors<br/><i>Click to drill down</i>" },
     plotOptions: {
+      series: {
+        cursor: "pointer",
+        point: {
+          events: {
+            click: function () {
+              const pt = this as Highcharts.Point;
+              const dim = adoptionData[pt.x!].dim;
+              const items = allActive.filter(c => c.dimensions.includes(dim));
+              drillRef.current({ label: `Competitors with "${dim}"`, items });
+            },
+          },
+        },
+      },
       bar: {
         dataLabels: { enabled: true, format: "{y}" },
         colorByPoint: true,
-        colors: data.map(d =>
-          d.count <= 5 ? COLORS.green : d.count <= 15 ? COLORS.amber : COLORS.red
-        ),
+        colors: adoptionData.map(d => d.count <= 5 ? COLORS.green : d.count <= 15 ? COLORS.amber : COLORS.red),
       },
     },
-    series: [{
-      type: "bar",
-      name: "Competitors",
-      data: data.map(d => ({ y: d.count, pct: d.pct })),
-    }],
+    series: [{ type: "bar", name: "Competitors", data: adoptionData.map(d => ({ y: d.count, pct: d.pct })) }],
     legend: { enabled: false },
     credits: { enabled: false },
-  };
+  }), []);
 
   return (
     <ChartSection
       title="4. Dimension Adoption — Where's the Crowd?"
       measures="Number of active competitors that offer each of the 13 KOS dimensions. Green bars = rare features, red bars = commoditized features."
       howToRead="Short green bars at the bottom = blue ocean dimensions that very few competitors offer. Tall red bars at the top = table stakes everyone has."
-      insight="SQL and Web-based are universal (45+ competitors). Presentations has ~1 competitor. Knowledge has ~5. NoSQL has ~7. These three dimensions together form KOS's defensible moat — no single competitor covers all three."
+      insight={adoptionInsight(competitors)}
+      drillDown={drill && <DrillDownPanel {...drill} onClose={() => setDrill(null)} onSelect={onSelect} />}
     >
       <HighchartsReact highcharts={Highcharts} options={options} />
     </ChartSection>
@@ -111,41 +208,86 @@ export function DimensionAdoptionBar() {
 
 /* ── 5. Dimension Co-occurrence Matrix ───────────── */
 
-export function CooccurrenceMatrix() {
-  const { dims, data } = dimCooccurrenceData(competitors);
+const coocData = dimCooccurrenceData(competitors);
 
-  const options: Highcharts.Options = {
+export function CooccurrenceMatrix({ onSelect }: { onSelect: (c: Competitor) => void }) {
+  const { dims, data } = coocData;
+  const [drill, setDrill] = useState<DrillState | null>(null);
+  const drillRef = useRef(setDrill);
+  drillRef.current = setDrill;
+
+  const options = useMemo<Highcharts.Options>(() => ({
     chart: { type: "heatmap", height: 500 },
     title: { text: undefined },
-    xAxis: { categories: dims, labels: { style: { fontSize: "9px" }, rotation: -45 } },
-    yAxis: { categories: dims, labels: { style: { fontSize: "9px" } }, title: { text: undefined }, reversed: true },
+    xAxis: {
+      categories: dims,
+      labels: {
+        useHTML: true,
+        rotation: -45,
+        style: { fontSize: "9px" },
+        formatter: function (): string {
+          const dim = this.value as string;
+          const desc = DIM_DESCRIPTIONS[dim] || dim;
+          return `<span title="${desc}" style="cursor:help">${dim}</span>`;
+        },
+      },
+    },
+    yAxis: {
+      categories: dims,
+      labels: {
+        useHTML: true,
+        style: { fontSize: "9px" },
+        formatter: function (): string {
+          const dim = this.value as string;
+          const desc = DIM_DESCRIPTIONS[dim] || dim;
+          return `<span title="${desc}" style="cursor:help">${dim}</span>`;
+        },
+      },
+      title: { text: undefined },
+      reversed: true,
+    },
     colorAxis: {
       min: 0,
       stops: [[0, "#f8fafc"], [0.3, "#bfdbfe"], [0.6, "#fbbf24"], [1, "#dc2626"]],
     },
     tooltip: {
-      formatter: function (this: Highcharts.Point): string {
-        const p = this as unknown as { point: { x: number; y: number; value: number } };
-        return `<b>${dims[p.point.x]}</b> + <b>${dims[p.point.y]}</b><br/>Co-occur in <b>${p.point.value}</b> competitors`;
+      formatter: function (): string {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const p = this as any;
+        return `<b>${dims[p.x]}</b> + <b>${dims[p.y]}</b><br/>${p.value} competitors<br/><i>Click to drill down</i>`;
+      },
+    },
+    plotOptions: {
+      heatmap: {
+        cursor: "pointer",
+        point: {
+          events: {
+            click: function () {
+              const pt = this as Highcharts.Point;
+              const dimA = dims[pt.x!];
+              const dimB = dims[pt.y!];
+              const items = allActive.filter(c => c.dimensions.includes(dimA) && c.dimensions.includes(dimB));
+              drillRef.current({ label: `"${dimA}" + "${dimB}"`, items });
+            },
+          },
+        },
       },
     },
     series: [{
-      type: "heatmap",
-      data,
-      borderWidth: 1,
-      borderColor: "#fff",
+      type: "heatmap", data, borderWidth: 1, borderColor: "#fff",
       dataLabels: { enabled: true, format: "{point.value}", style: { fontSize: "8px", textOutline: "none" } },
     }],
     legend: { enabled: false },
     credits: { enabled: false },
-  };
+  }), [dims, data]);
 
   return (
     <ChartSection
       title="5. Dimension Co-occurrence — Feature Bundling Patterns"
       measures="How many competitors offer each pair of KOS dimensions together. Higher number = more commonly bundled features."
       howToRead="Hot cells = features always bundled together (table stakes pairs). Cold/empty cells = feature combinations nobody offers. These are untapped product bundles."
-      insight="SQL+Dashboards and SQL+Web-based are the most tightly bundled (30+). But Knowledge+Presentations, NoSQL+Presentations, and Knowledge+NoSQL are almost never paired — KOS bundles all three, a combination zero competitors offer."
+      insight={cooccurrenceInsight(competitors)}
+      drillDown={drill && <DrillDownPanel {...drill} onClose={() => setDrill(null)} onSelect={onSelect} />}
     >
       <HighchartsReact highcharts={Highcharts} options={options} />
     </ChartSection>

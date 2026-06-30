@@ -37,7 +37,8 @@ export interface ClientsByVertical {
 
 export interface TimelineEntry {
   year: number;
-  value: string;
+  value?: string;
+  milestone?: string;
 }
 
 export interface DeepResearch {
@@ -47,6 +48,8 @@ export interface DeepResearch {
     geos?: string[];
     verticals?: string[];
     target?: string;
+    notes?: string;
+    clients?: string[];
   };
   clientTimeline?: TimelineEntry[];
   clientsByVertical?: ClientsByVertical[];
@@ -59,6 +62,104 @@ export interface DeepResearch {
 export type BusinessModel = "SaaS" | "Open Core" | "Enterprise SaaS" | "Platform" | "Freemium";
 export type GTM = "Product-led" | "Sales-led" | "Hybrid" | "Community-led";
 
+/* ── Structured field types ─────────────────────── */
+
+export interface FundingInfo {
+  totalRaisedM: number | null;
+  isPublic: boolean;
+  isBootstrapped?: boolean;
+  parentCompany?: string;
+  notes?: string;
+}
+
+export interface ValuationInfo {
+  amountM: number | null;
+  type: "acquisition" | "last-round" | "public-mktcap" | "undisclosed";
+  notes?: string;
+}
+
+export interface RevenueInfo {
+  annualM: number | null;
+  isEstimated: boolean;
+  arrM?: number | null;
+  notes?: string;
+}
+
+export interface TeamInfo {
+  headcount: number | null;
+  isApproximate: boolean;
+  parentHeadcount?: number;
+  notes?: string;
+}
+
+export interface LinkedInInfo {
+  followers: number | null;
+  isParentPage: boolean;
+}
+
+export interface CustomersInfo {
+  notable: string[];
+  totalCount?: number | null;
+  countLabel?: string;
+  notes?: string;
+}
+
+export interface PricingPlan {
+  name: string;
+  pricePerUserMo?: number;
+  priceFlatMo?: number;
+  notes?: string;
+}
+
+export interface PricingInfo {
+  plans: PricingPlan[];
+  hasFreeTier: boolean;
+  hasEnterpriseTier: boolean;
+  startingPricePerUserMo?: number;
+  notes?: string;
+}
+
+export interface TrafficInfo {
+  monthlyVisits: number | null;
+  marketSharePct?: number;
+  growthMoM?: number;
+  organicPct?: number;
+  source?: string;
+  notes?: string;
+}
+
+export interface TargetUser {
+  role: string;
+  technical?: "very high" | "high" | "medium-high" | "medium" | "low-medium" | "low" | "none";
+  description: string;
+  techLevel?: string;
+}
+
+export interface CompetitivePosition {
+  usersPerOrg?: string;
+  targetUsers?: TargetUser[];
+  excludes?: string[];
+  redOcean?: string[];
+  blueOceanKos?: string[];
+  blueOceanThem?: string[];
+  userVoices?: { persona: string; quote: string }[];
+  kosAdvantages?: string[];
+  theirAdvantages?: string[];
+}
+
+export type VoiceSource = "G2" | "Reddit" | "Twitter/X" | "LinkedIn" | "Gartner" | "TrustRadius" | "ProductHunt" | "HackerNews" | "Capterra" | "Trustpilot" | "PeerSpot" | "Other";
+export type VoiceSentiment = "positive" | "negative" | "mixed";
+
+export interface UserVoice {
+  source: VoiceSource;
+  sentiment: VoiceSentiment;
+  quote: string;
+  context?: string;
+  date?: string;
+  url?: string;
+  persona?: string;
+}
+
 export interface Competitor {
   name: string;
   url: string;
@@ -67,17 +168,19 @@ export interface Competitor {
   status: "active" | "dead" | "acquired" | "maintenance";
   threat: 1 | 2 | 3 | 4 | 5;
   dimensions: string[];
-  funding: string;
-  valuation: string;
-  revenue: string;
-  team: string;
-  linkedin: string;
-  customers: string;
+  funding: FundingInfo;
+  valuation: ValuationInfo;
+  revenue: RevenueInfo;
+  team: TeamInfo;
+  linkedin: LinkedInInfo;
+  customers: CustomersInfo;
   product: string;
-  pricing: string;
-  traffic: string;
-  weaknesses: string;
+  pricing: PricingInfo;
+  traffic: TrafficInfo;
+  weaknesses: string[];
   sources: { label: string; url: string }[];
+  positioning?: CompetitivePosition;
+  userVoices?: UserVoice[];
   deep?: DeepResearch;
   founded?: number;
   hq?: string;

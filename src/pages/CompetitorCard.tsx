@@ -14,6 +14,62 @@ const threatVariant = (t: number) =>
 const threatLabel = (t: number) =>
   `T${t}`;
 
+function fmtM(v: number): string {
+  return v >= 1000 ? `$${(v / 1000).toFixed(1).replace(/\.0$/, "")}B` : `$${Math.round(v)}M`;
+}
+
+function fmtNum(n: number): string {
+  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`
+    : n >= 1_000 ? `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`
+    : String(n);
+}
+
+function fmtFunding(c: Competitor): string {
+  if (c.funding.isPublic) return `Public${c.funding.parentCompany ? ` (${c.funding.parentCompany})` : ""}`;
+  if (c.funding.isBootstrapped) return "Bootstrapped";
+  if (c.funding.totalRaisedM == null) return "Not disclosed";
+  return fmtM(c.funding.totalRaisedM);
+}
+
+function fmtValuation(c: Competitor): string {
+  if (c.valuation.amountM == null) return "N/A";
+  return fmtM(c.valuation.amountM);
+}
+
+function fmtRevenue(c: Competitor): string {
+  if (c.revenue.arrM != null) return `${fmtM(c.revenue.arrM)} ARR`;
+  if (c.revenue.annualM != null) return `${c.revenue.isEstimated ? "~" : ""}${fmtM(c.revenue.annualM)}/yr`;
+  return "N/A";
+}
+
+function fmtTeam(c: Competitor): string {
+  if (c.team.headcount == null) return "N/A";
+  return `${c.team.isApproximate ? "~" : ""}${c.team.headcount.toLocaleString()}`;
+}
+
+function fmtLinkedIn(c: Competitor): string {
+  if (c.linkedin.followers == null) return "N/A";
+  return fmtNum(c.linkedin.followers);
+}
+
+function fmtCustomers(c: Competitor): string {
+  if (c.customers.notable.length > 0) return c.customers.notable.slice(0, 4).join(", ");
+  if (c.customers.totalCount) return `${fmtNum(c.customers.totalCount)} ${c.customers.countLabel || "customers"}`;
+  return "N/A";
+}
+
+function fmtPricing(c: Competitor): string {
+  if (c.pricing.startingPricePerUserMo) return `From $${c.pricing.startingPricePerUserMo}/user/mo`;
+  if (c.pricing.hasFreeTier) return "Free tier available";
+  if (c.pricing.hasEnterpriseTier) return "Enterprise (custom)";
+  return "N/A";
+}
+
+function fmtTraffic(c: Competitor): string {
+  if (c.traffic.monthlyVisits) return `${fmtNum(c.traffic.monthlyVisits)}/mo`;
+  return c.traffic.notes || "N/A";
+}
+
 interface Props {
   c: Competitor;
   onClick?: () => void;
@@ -51,23 +107,25 @@ export function CompetitorCard({ c, onClick }: Props) {
 
       {/* Metrics grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
-        <Metric label="Funding" value={c.funding} />
-        <Metric label="Valuation" value={c.valuation} />
-        <Metric label="Revenue" value={c.revenue} />
-        <Metric label="Team" value={c.team} />
+        <Metric label="Funding" value={fmtFunding(c)} />
+        <Metric label="Valuation" value={fmtValuation(c)} />
+        <Metric label="Revenue" value={fmtRevenue(c)} />
+        <Metric label="Team" value={fmtTeam(c)} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
-        <Metric label="LinkedIn" value={c.linkedin} />
-        <Metric label="Customers" value={c.customers} />
-        <Metric label="Pricing" value={c.pricing} />
-        <Metric label="Traffic" value={c.traffic} />
+        <Metric label="LinkedIn" value={fmtLinkedIn(c)} />
+        <Metric label="Customers" value={fmtCustomers(c)} />
+        <Metric label="Pricing" value={fmtPricing(c)} />
+        <Metric label="Traffic" value={fmtTraffic(c)} />
       </div>
 
       {/* Weaknesses */}
       <div className="text-xs mb-3">
         <span className="text-danger font-medium block mb-1">Weaknesses</span>
-        <p>{c.weaknesses}</p>
+        <ul className="list-disc list-inside space-y-0.5">
+          {c.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
+        </ul>
       </div>
 
       {/* Sources */}

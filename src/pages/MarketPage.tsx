@@ -1,38 +1,16 @@
 import { Section } from "../components/Section";
 import { Card } from "../components/Card";
+import { Badge } from "../components/Badge";
 import { DataTable } from "../components/DataTable";
-
-const marketData = [
-  { segment: "BI Software", value2025: "$40B", projected: "$81B (2033)", cagr: "9.3%" },
-  { segment: "AI Enterprise Intelligence", value2025: "$18B", projected: "$63B (2034)", cagr: "14.3%" },
-  { segment: "BI + Analytics Combined", value2025: "$44B", projected: "$96B (2035)", cagr: "8.9%" },
-];
-
-const marketColumns = [
-  { key: "segment" as const, label: "Segment" },
-  { key: "value2025" as const, label: "2025" },
-  { key: "projected" as const, label: "Projected" },
-  { key: "cagr" as const, label: "CAGR" },
-];
-
-const drivers = [
-  "Integration of generative AI and agentic workflows into BI",
-  "Adoption of cloud-based analytics tools",
-  "Demand for real-time insights across operational databases",
-  "Democratization of data access beyond technical users",
-  "EU digitalization funds (Next Generation) fueling SMB adoption",
-];
-
-const spainInsights = [
-  { title: "Market maturity", desc: "Spain is 2-3 years behind UK/Nordics in analytics adoption — less competition, more greenfield accounts." },
-  { title: "PowerBI dominance", desc: "Microsoft 365 bundling makes PowerBI the default. But typical adoption is 15-25% of licensed users." },
-  { title: "Qlik presence", desc: "Historical market share in Spain and LATAM. Some mid-market still runs QlikView." },
-  { title: "SAP in large enterprise", desc: "IBEX 35 companies (Telefonica, Repsol, Inditex) run SAP Analytics Cloud or legacy BusinessObjects." },
-  { title: "Sales culture", desc: "Relationship-driven. LinkedIn cold outreach converts lower than US. Events and referrals are more effective." },
-  { title: "Price sensitivity", desc: "Spanish mid-market budgets are 30-40% lower than equivalent UK companies." },
-  { title: "Decision cycles", desc: "6-12 months mid-market, 12-18 months enterprise. More risk-averse with new vendors." },
-  { title: "Languages", desc: "Spanish-language product is a competitive advantage. Most competitors are English-only." },
-];
+import {
+  marketSegments, marketColumns,
+  tamSamSom,
+  adoptionStats, adoptionColumns,
+  dataTeamCosts, dataTeamColumns,
+  drivers, aiDisruption,
+  buyerSegments, buyerColumns,
+  spainInsights, euRegulations,
+} from "./marketData";
 
 export function MarketPage() {
   return (
@@ -40,12 +18,64 @@ export function MarketPage() {
       <header className="mb-10">
         <h1 className="text-3xl font-bold text-text mb-3">Market Research</h1>
         <p className="text-text-muted">
-          Market sizing, growth drivers, and geographic focus analysis.
+          Market sizing, growth drivers, adoption gaps, AI disruption, geographic
+          focus, and TAM/SAM/SOM analysis.
         </p>
       </header>
 
-      <Section title="Market size" subtitle="AI-specific segment grows at nearly 2x the overall BI market">
-        <DataTable columns={marketColumns} rows={marketData} />
+      <Section title="Market sizing" subtitle="AI-specific segments grow at 3-4x the overall BI market">
+        <DataTable columns={marketColumns} rows={marketSegments} />
+      </Section>
+
+      <Section title="TAM / SAM / SOM">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {tamSamSom.map((t) => (
+            <Card key={t.label}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="relative group">
+                  <Badge label={t.label} variant={t.label === "TAM" ? "default" : t.label === "SAM" ? "warning" : "success"} />
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 text-[11px] text-white bg-text rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    {t.label === "TAM" && "Total Addressable Market — the full revenue opportunity if 100% market share"}
+                    {t.label === "SAM" && "Serviceable Addressable Market — the segment you can realistically reach"}
+                    {t.label === "SOM" && "Serviceable Obtainable Market — what you can capture in the near term"}
+                  </span>
+                </span>
+                <span className="text-text font-semibold text-lg">{t.value}</span>
+              </div>
+              <p className="text-xs font-medium text-text mb-1">{t.title}</p>
+              <p className="text-xs">{t.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="The adoption gap" subtitle="78% of enterprises have BI — but 75% of employees never touch it">
+        <DataTable columns={adoptionColumns} rows={adoptionStats} />
+        <Card className="mt-3">
+          <p className="text-text font-medium">
+            This is the core opportunity: BI tools exist everywhere, but most employees
+            can{"'"}t use them. The 71-75% of licensed users who never touch their BI tools
+            represent a massive underserved market — and KOS{"'"}s natural language interface
+            directly attacks this gap.
+          </p>
+        </Card>
+      </Section>
+
+      <Section title="Cost of the status quo" subtitle="What companies pay to NOT have KOS">
+        <DataTable columns={dataTeamColumns} rows={dataTeamCosts} />
+        <Card className="mt-3">
+          <p>
+            A minimal data team (1 engineer + 2 analysts + 1 BI developer) costs{" "}
+            <span className="text-text font-medium">$450-600K/year in the US</span> or{" "}
+            <span className="text-text font-medium">EUR 200-350K/year in Spain/EU</span>.
+            And 30-70% of their time goes to ad-hoc requests that KOS can handle in seconds.
+            The ROI case writes itself.
+          </p>
+        </Card>
+      </Section>
+
+      <Section title="Market segments by buyer type">
+        <DataTable columns={buyerColumns} rows={buyerSegments} />
       </Section>
 
       <Section title="Growth drivers">
@@ -61,6 +91,20 @@ export function MarketPage() {
         </Card>
       </Section>
 
+      <Section title="AI disruption in BI" subtitle="Every vendor is adding AI — but none are AI-native">
+        <div className="space-y-3">
+          {aiDisruption.map((item) => (
+            <Card key={item.insight}>
+              <div className="flex items-start gap-2 mb-1">
+                <p className="text-text font-medium text-sm">{item.insight}</p>
+                <Badge label={item.source} variant="default" />
+              </div>
+              <p className="text-xs">{item.detail}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
       <Section title="Why now?">
         <Card>
           <p>
@@ -69,14 +113,23 @@ export function MarketPage() {
             generate text but actually <span className="text-text font-medium">execute queries</span>,{" "}
             <span className="text-text font-medium">browse schemas</span>, and{" "}
             <span className="text-text font-medium">orchestrate multi-step workflows</span>{" "}
-            across databases and APIs. This was not possible 3 years ago. The
-            technology matured at the exact moment enterprises are looking to
-            democratize data access.
+            across databases and APIs. This was not possible 3 years ago.
+          </p>
+          <p className="mt-3">
+            Simultaneously, Gartner predicts a{" "}
+            <span className="text-text font-medium">$58B market shakeup</span> as AI agents
+            challenge mainstream productivity tools by 2027. Forrester warns that 3 out of 4
+            firms building agentic architectures on their own will fail — creating demand for
+            purpose-built platforms that handle the orchestration layer.
+          </p>
+          <p className="mt-3 text-accent-hover font-medium">
+            The technology matured at the exact moment enterprises are looking to
+            democratize data access. KOS is positioned to capture this window.
           </p>
         </Card>
       </Section>
 
-      <Section title="Geographic focus: Spain" subtitle="Entry market, then EU expansion">
+      <Section title="Geographic focus: Spain" subtitle="Entry market with EUR 4.7B in digitalization funds">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {spainInsights.map((item) => (
             <Card key={item.title} title={item.title}>
@@ -86,27 +139,13 @@ export function MarketPage() {
         </div>
       </Section>
 
-      <Section title="EU regulatory landscape">
+      <Section title="EU regulatory landscape" subtitle="Regulations that create demand for governed AI platforms">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Card title="GDPR">
-            Data residency is non-negotiable. EU companies require processing
-            within the EU. A GDPR-compliant DPA is legally required before
-            handling personal data.
-          </Card>
-          <Card title="EU AI Act">
-            Coming into full force 2025-2026. If AI supports decisions affecting
-            people (HR, credit, segmentation), transparency and risk assessment
-            requirements apply.
-          </Card>
-          <Card title="DORA">
-            For financial services clients — adds requirements around third-party
-            ICT risk management. Banks and insurers will ask about DORA compliance.
-          </Card>
-          <Card title="CSRD">
-            Corporate Sustainability Reporting Directive requires ESG metric
-            reporting — creates demand for analytics platforms handling
-            sustainability data.
-          </Card>
+          {euRegulations.map((item) => (
+            <Card key={item.name} title={item.name}>
+              {item.desc}
+            </Card>
+          ))}
         </div>
       </Section>
     </>

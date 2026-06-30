@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOS — The AI Operating System for Your Organization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; color: #0f172a; overflow: hidden; }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 48px 80px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%); }
+        .slide.active { opacity: 1; visibility: visible; }
+        .slide-content { max-width: 1140px; width: 100%; text-align: center; }
+        h1 { font-size: 4rem; font-weight: 700; line-height: 1.05; margin-bottom: 1rem; background: linear-gradient(135deg, #0369a1 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        h2 { font-size: 2.4rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.5rem; color: #0f172a; }
+        .subtitle { font-size: 1.2rem; color: #1e293b; margin-bottom: 1.75rem; font-weight: 400; }
+        .emphasis { font-size: 1.4rem; font-weight: 600; color: #0369a1; margin-top: 1.75rem; }
+        .divider { width: 60px; height: 3px; background: linear-gradient(90deg, #0369a1, #7c3aed); margin: 1.5rem auto; border-radius: 2px; }
+        .icon { width: 24px; height: 24px; stroke-width: 1.5; }
+        .icon-lg { width: 32px; height: 32px; }
+        .icon-xl { width: 48px; height: 48px; stroke-width: 1.25; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; text-align: left; transition: border-color 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .card:hover { border-color: #0369a1; box-shadow: 0 4px 12px rgba(3,105,161,0.08); }
+        .card.highlight { border: 2px solid #0369a1; background: rgba(3,105,161,0.03); }
+        .card.danger { border: 1px solid #fca5a5; background: rgba(220,38,38,0.03); }
+        .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+        .card-icon { width: 38px; height: 38px; border-radius: 8px; background: rgba(3,105,161,0.08); display: flex; align-items: center; justify-content: center; color: #0369a1; flex-shrink: 0; }
+        .card-title { font-size: 0.98rem; font-weight: 600; color: #0f172a; }
+        .card-desc { font-size: 0.82rem; color: #1e293b; line-height: 1.45; }
+        .card-meta { font-size: 0.72rem; color: #0369a1; margin-top: 0.15rem; }
+        .pills { margin-top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .pill { font-size: 0.75rem; padding: 0.18rem 0.6rem; border-radius: 999px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin: 1.5rem auto; max-width: 920px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin: 1.5rem auto; max-width: 1040px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 1.5rem auto; }
+        .comparison-container { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0; }
+        .comparison-card { width: 420px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; text-align: left; }
+        .comparison-card.highlight { border: 2px solid #0369a1; background: rgba(3,105,161,0.02); }
+        .comparison-card.dim { border-color: #dc2626; background: rgba(220,38,38,0.02); }
+        .comparison-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+        .comparison-title { font-size: 1.05rem; font-weight: 600; }
+        .comparison-card.highlight .comparison-title { color: #0369a1; }
+        .comparison-card.dim .comparison-title { color: #dc2626; }
+        .comparison-list { list-style: none; }
+        .comparison-list li { padding: 0.4rem 0; font-size: 0.88rem; color: #1e293b; display: flex; align-items: flex-start; gap: 0.6rem; }
+        .check { color: #059669; flex-shrink: 0; margin-top: 2px; }
+        .cross { color: #dc2626; flex-shrink: 0; margin-top: 2px; }
+        .pillar-container { display: flex; justify-content: center; gap: 0.9rem; flex-wrap: wrap; }
+        .pillar { width: 150px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 0.85rem; text-align: center; transition: border-color 0.2s ease, transform 0.2s ease; }
+        .pillar:hover { border-color: #0369a1; transform: translateY(-4px); }
+        .pillar-icon { width: 42px; height: 42px; margin: 0 auto 0.55rem; border-radius: 10px; background: rgba(3,105,161,0.08); display: flex; align-items: center; justify-content: center; color: #0369a1; }
+        .pillar-title { font-size: 0.72rem; font-weight: 600; color: #0369a1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+        .pillar-desc { font-size: 0.76rem; color: #1e293b; line-height: 1.35; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2.6rem; font-weight: 700; line-height: 1; }
+        .stat-value.negative { color: #dc2626; }
+        .stat-value.positive { color: #0369a1; }
+        .transition-box { text-align: center; padding: 1.1rem 1.6rem; border-radius: 12px; }
+        .transition-box.dim { background: #ffffff; border: 1px solid #e2e8f0; opacity: 0.65; }
+        .transition-box.highlight { background: rgba(3,105,161,0.05); border: 2px solid #0369a1; }
+        .transition-arrow { color: #0369a1; display: flex; align-items: center; }
+        /* Layer stack */
+        .layer-stack { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; margin: 1rem 0; }
+        .layer { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.5rem; border-radius: 8px; font-size: 0.88rem; font-weight: 500; }
+        .layer-people { width: 520px; background: rgba(102, 126, 234, 0.1); border: 1px solid #667eea; color: #4f46e5; }
+        .layer-cap { width: 450px; background: rgba(3, 105, 161, 0.08); border: 1px solid #0369a1; color: #0369a1; }
+        .layer-kernel { width: 380px; background: linear-gradient(135deg, rgba(3,105,161,0.15) 0%, rgba(124,58,237,0.15) 100%); border: 1px solid #0369a1; color: #0f172a; font-weight: 600; }
+        .layer-conn { width: 310px; background: rgba(5, 150, 105, 0.1); border: 1px solid #059669; color: #047857; }
+        .layer-arrow { color: #94a3b8; font-size: 0.9rem; }
+        /* Flow */
+        .flow-container { display: flex; align-items: center; justify-content: center; gap: 0.25rem; margin: 1.75rem 0; flex-wrap: wrap; }
+        .flow-step { display: flex; flex-direction: column; align-items: center; padding: 0.5rem 0.75rem; }
+        .flow-icon-wrapper { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem; color: #ffffff; }
+        .flow-step:nth-child(1) .flow-icon-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .flow-step:nth-child(3) .flow-icon-wrapper { background: linear-gradient(135deg, #0369a1 0%, #7c3aed 100%); }
+        .flow-step:nth-child(5) .flow-icon-wrapper { background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%); }
+        .flow-step:nth-child(7) .flow-icon-wrapper { background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); }
+        .flow-step:nth-child(9) .flow-icon-wrapper { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .flow-label { font-size: 0.78rem; color: #1e293b; text-align: center; font-weight: 500; }
+        .flow-arrow { color: #94a3b8; }
+        .nav { position: fixed; bottom: 24px; right: 24px; display: flex; gap: 8px; z-index: 100; }
+        .nav button { background: #fff; border: 1px solid #e2e8f0; color: #1e293b; width: 44px; height: 44px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: border-color 0.2s ease, background 0.2s ease; display: flex; align-items: center; justify-content: center; }
+        .nav button:hover { background: rgba(3,105,161,0.05); border-color: #0369a1; color: #0369a1; }
+        .nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #0369a1, #7c3aed); transition: width 0.3s ease; z-index: 100; }
+        .counter { position: fixed; bottom: 28px; left: 24px; font-size: 0.8rem; color: #64748b; z-index: 100; }
+        .hint { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; color: #94a3b8; z-index: 100; }
+        .fullscreen-btn { position: fixed; top: 16px; right: 16px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; transition: border-color 0.2s ease; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .fullscreen-btn:hover { border-color: #0369a1; color: #0369a1; }
+        [data-tooltip] { position: relative; cursor: help; }
+        [data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: #0f172a; color: #e2e8f0; padding: 0.7rem 1rem; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; max-width: 280px; width: max-content; text-align: left; opacity: 0; visibility: hidden; transition: opacity 0.2s ease; z-index: 1000; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        [data-tooltip]:hover::after { opacity: 1; visibility: visible; }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <i data-lucide="maximize-2" style="width: 18px; height: 18px;"></i>
+    </button>
+
+    <div class="presentation" id="presentation">
+
+        <!-- 1. Title -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content">
+                <p style="font-size: 0.9rem; color: #0369a1; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1.25rem; font-weight: 500;">The Organizational Operating System</p>
+                <h1>KOS</h1>
+                <div class="divider"></div>
+                <p class="subtitle" style="font-size: 1.5rem;">The first AI operating system for your organization</p>
+                <p style="margin-top: 1rem; font-size: 1.05rem; color: #1e293b; line-height: 1.6;">Connect everything. Ask anything. Act on it. — for everyone.</p>
+                <div style="margin-top: 2.5rem; display: flex; justify-content: center; align-items: center; gap: 2rem;">
+                    <div style="text-align: center;"><div style="width:56px;height:56px;margin:0 auto 0.5rem;background:rgba(3,105,161,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#0369a1;"><i data-lucide="plug" class="icon-lg"></i></div><div style="font-size:0.85rem;color:#1e293b;font-weight:500;">Connect</div></div>
+                    <div style="color:#94a3b8;font-size:1.25rem;">+</div>
+                    <div style="text-align: center;"><div style="width:56px;height:56px;margin:0 auto 0.5rem;background:rgba(3,105,161,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#0369a1;"><i data-lucide="message-circle" class="icon-lg"></i></div><div style="font-size:0.85rem;color:#1e293b;font-weight:500;">Ask</div></div>
+                    <div style="color:#94a3b8;font-size:1.25rem;">+</div>
+                    <div style="text-align: center;"><div style="width:56px;height:56px;margin:0 auto 0.5rem;background:rgba(3,105,161,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#0369a1;"><i data-lucide="zap" class="icon-lg"></i></div><div style="font-size:0.85rem;color:#1e293b;font-weight:500;">Act</div></div>
+                    <div style="color:#94a3b8;font-size:1.25rem;">=</div>
+                    <div style="text-align: center;"><div style="width:56px;height:56px;margin:0 auto 0.5rem;background:linear-gradient(135deg,rgba(3,105,161,0.15),rgba(124,58,237,0.15));border-radius:12px;display:flex;align-items:center;justify-content:center;color:#0369a1;"><i data-lucide="cpu" class="icon-lg"></i></div><div style="font-size:0.85rem;color:#1e293b;font-weight:500;">Operate</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. The problem -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>Your Organization Runs on Friction</h2>
+                <p class="subtitle">The data exists. Reaching it is the problem.</p>
+                <div class="grid-2">
+                    <div class="card danger"><div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="split" class="icon"></i></div><div class="card-title">Data in silos</div></div><div class="card-desc">SQL here, NoSQL there, files in Drive, metrics in SaaS apps. Nothing talks to anything.</div></div>
+                    <div class="card danger"><div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="lock" class="icon"></i></div><div class="card-title">Answers need a specialist</div></div><div class="card-desc">SQL, dashboards, semantic models. Every question routes through the data team.</div></div>
+                    <div class="card danger"><div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="brain-circuit" class="icon"></i></div><div class="card-title">Knowledge trapped in heads</div></div><div class="card-desc">Business logic, edge cases, "how we calculate X" — lost when people leave.</div></div>
+                    <div class="card danger"><div class="card-header"><div class="card-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i data-lucide="unplug" class="icon"></i></div><div class="card-title">Insight ≠ action</div></div><div class="card-desc">You see a chart… then go do the work somewhere else, by hand.</div></div>
+                </div>
+                <p class="emphasis">You don't have a data problem. You have an access problem.</p>
+            </div>
+        </div>
+
+        <!-- 3. The shift -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2>From Tools You Operate → A System That Operates For You</h2>
+                <p class="subtitle">The paradigm shift</p>
+                <div style="display:flex; justify-content:center; align-items:center; gap:2rem; margin:2rem 0;">
+                    <div class="transition-box dim">
+                        <div style="margin-bottom:0.5rem;"><i data-lucide="wrench" style="width:34px;height:34px;color:#64748b;"></i></div>
+                        <div style="font-size:1.1rem;color:#1e293b;font-weight:600;">Tools</div>
+                        <div style="font-size:0.8rem;color:#64748b;">BI · dashboards · scripts<br>Static. Technical. Siloed.</div>
+                    </div>
+                    <div class="transition-arrow"><i data-lucide="arrow-right" style="width:32px;height:32px;"></i></div>
+                    <div class="transition-box highlight">
+                        <div style="margin-bottom:0.5rem;"><i data-lucide="cpu" style="width:34px;height:34px;color:#0369a1;"></i></div>
+                        <div style="font-size:1.1rem;color:#0369a1;font-weight:700;">An Operating System</div>
+                        <div style="font-size:0.8rem;color:#1e293b;">dialogue · knowledge · action<br>Dynamic. Universal. Unlimited.</div>
+                    </div>
+                </div>
+                <p class="emphasis">You stop operating tools. The OS operates your data for you.</p>
+            </div>
+        </div>
+
+        <!-- 4. What is KOS (OS metaphor) -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>An Operating System for Your Organization</h2>
+                <p class="subtitle">Like a computer OS — but for your company's data, knowledge & actions</p>
+                <div class="layer-stack">
+                    <div class="layer layer-people" data-tooltip="Everyone — finance, ops, sales, execs. No SQL, no dashboard-building. Just ask in plain language.">
+                        <i data-lucide="users" style="width:18px;height:18px;"></i> Everyone in the organization
+                    </div>
+                    <div class="layer-arrow"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i></div>
+                    <div class="layer layer-cap" data-tooltip="The 'system calls' of the org OS: query, explore, analyze, present, automate, learn, extend.">
+                        <i data-lucide="layout-grid" style="width:18px;height:18px;"></i> Capabilities (Query · Analyze · Present · Automate)
+                    </div>
+                    <div class="layer-arrow"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i></div>
+                    <div class="layer layer-kernel" data-tooltip="The kernel: AI orchestration, reasoning, memory, and your organization's living knowledge base.">
+                        <i data-lucide="cpu" style="width:18px;height:18px;"></i> KOS KERNEL — AI orchestration + memory + knowledge
+                    </div>
+                    <div class="layer-arrow"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i></div>
+                    <div class="layer layer-conn" data-tooltip="The 'drivers': connectors to any data source — your data stays where it lives.">
+                        <i data-lucide="plug" style="width:18px;height:18px;"></i> Connectors (any source — SQL, NoSQL, files, APIs)
+                    </div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">The hardware is your data. KOS is the OS that runs it.</p>
+            </div>
+        </div>
+
+        <!-- 5. Capabilities -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2>What You Can Do With KOS</h2>
+                <p class="subtitle">From insight → to action → to outreach — one no-code system, any user</p>
+                <div class="pillar-container">
+                    <div class="pillar" data-tooltip="Ask questions in plain English across any connected source — business intelligence & data analysis."><div class="pillar-icon"><i data-lucide="message-circle" class="icon-lg"></i></div><div class="pillar-title">Query &amp; Analyze</div><div class="pillar-desc">BI &amp; data analysis, in plain language</div></div>
+                    <div class="pillar" style="border-color:#0369a1;background:rgba(3,105,161,0.04);" data-tooltip="Generate dashboards and embeddable analytics — drop them into your own apps & products."><div class="pillar-icon"><i data-lucide="layout-dashboard" class="icon-lg"></i></div><div class="pillar-title">Dashboards &amp; Embed</div><div class="pillar-desc">Generate + embeddable analytics</div></div>
+                    <div class="pillar" data-tooltip="Auto-create slide decks, multi-tab reports, pages and forms — shareable."><div class="pillar-icon"><i data-lucide="presentation" class="icon-lg"></i></div><div class="pillar-title">Present</div><div class="pillar-desc">Decks &amp; reports</div></div>
+                    <div class="pillar" style="border-color:#0369a1;background:rgba(3,105,161,0.04);" data-tooltip="Trigger and interact natively from your team's channels: Slack, Teams, WhatsApp, Email, SMS."><div class="pillar-icon"><i data-lucide="messages-square" class="icon-lg"></i></div><div class="pillar-title">Any Channel</div><div class="pillar-desc">Slack · Teams · WhatsApp · Email</div></div>
+                    <div class="pillar" style="border-color:#7c3aed;background:rgba(124,58,237,0.05);" data-tooltip="Turing-complete, no-code, AI-leveraged: any user composes any workflow — BI, automations, agents — without engineering."><div class="pillar-icon" style="background:rgba(124,58,237,0.08);color:#7c3aed;"><i data-lucide="workflow" class="icon-lg"></i></div><div class="pillar-title">No-Code Workflows</div><div class="pillar-desc">Turing-complete · any user, any workflow</div></div>
+                    <div class="pillar" data-tooltip="Schedule scripts, publish APIs, trigger actions in external systems."><div class="pillar-icon"><i data-lucide="zap" class="icon-lg"></i></div><div class="pillar-title">Automate &amp; Act</div><div class="pillar-desc">Scripts · APIs · actions</div></div>
+                    <div class="pillar" style="border-color:#0369a1;background:rgba(3,105,161,0.04);" data-tooltip="Bulk communication, fully in-house & AI-leveraged — including an AI call-center system for voice outreach at scale."><div class="pillar-icon"><i data-lucide="megaphone" class="icon-lg"></i></div><div class="pillar-title">Communicate</div><div class="pillar-desc">Bulk outreach · AI call center</div></div>
+                    <div class="pillar" data-tooltip="A centralized knowledge base of business logic & context — the org gets smarter."><div class="pillar-icon"><i data-lucide="brain" class="icon-lg"></i></div><div class="pillar-title">Learn</div><div class="pillar-desc">Org-wide memory</div></div>
+                    <div class="pillar" data-tooltip="Built-in connectors, MCP, and custom APIs — extend KOS to anything."><div class="pillar-icon"><i data-lucide="puzzle" class="icon-lg"></i></div><div class="pillar-title">Extend</div><div class="pillar-desc">Connectors · MCP · custom</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">Turing-complete &amp; no-code: any user builds any workflow — analyze, act &amp; communicate, all in one OS.</p>
+            </div>
+        </div>
+
+        <!-- 6. Connect anything -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>Connect Anything — Not Just a Warehouse</h2>
+                <p class="subtitle">The wedge no warehouse-locked rival can copy</p>
+                <div class="grid-4" style="max-width: 980px;">
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="database" class="icon"></i></div><div class="card-title">SQL databases</div></div><div class="card-desc">Postgres, MySQL, Snowflake, BigQuery…</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="braces" class="icon"></i></div><div class="card-title">NoSQL</div></div><div class="card-desc">MongoDB, DynamoDB, Elasticsearch…</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="file-text" class="icon"></i></div><div class="card-title">Files & documents</div></div><div class="card-desc">PDF, Excel, CSV, Word — structured or not.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="table" class="icon"></i></div><div class="card-title">Spreadsheets</div></div><div class="card-desc">Sheets, Excel — live or uploaded.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="cloud" class="icon"></i></div><div class="card-title">SaaS & APIs</div></div><div class="card-desc">Salesforce, Stripe, HubSpot, REST…</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="hard-drive" class="icon"></i></div><div class="card-title">Cloud storage</div></div><div class="card-desc">S3, GCS, Drive, Dropbox.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="plug-zap" class="icon"></i></div><div class="card-title">MCP servers</div></div><div class="card-desc">Any MCP-compatible tool or agent.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="plus" class="icon"></i></div><div class="card-title">Custom connectors</div></div><div class="card-desc">Build your own — one interface.</div></div>
+                </div>
+                <p class="emphasis">No warehouse required. No migration. Your data stays where it lives.</p>
+            </div>
+        </div>
+
+        <!-- 7. No semantic-layer tax -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2>No Modeling. No Setup Tax.</h2>
+                <p class="subtitle">Everyone else makes you build a semantic layer first</p>
+                <div class="comparison-container">
+                    <div class="comparison-card dim">
+                        <div class="comparison-header"><i data-lucide="hourglass" class="icon-lg" style="color:#dc2626;"></i><div class="comparison-title">The incumbent way</div></div>
+                        <ul class="comparison-list">
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> Engineers author LookML / YAML / dbt / Ontology</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> Weeks of modeling before anyone can ask</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> Maintain it forever as the business changes</li>
+                            <li><i data-lucide="x" class="cross" style="width:16px;height:16px;"></i> No model = no answers</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card highlight">
+                        <div class="comparison-header"><i data-lucide="rocket" class="icon-lg" style="color:#0369a1;"></i><div class="comparison-title">The KOS way</div></div>
+                        <ul class="comparison-list">
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> Connect a source — done in minutes</li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> Ask in plain language immediately</li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> KOS maps meaning on the fly</li>
+                            <li><i data-lucide="check" class="check" style="width:16px;height:16px;"></i> Learns your terms as you go</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="emphasis">Connect and ask. KOS figures out what your data means.</p>
+            </div>
+        </div>
+
+        <!-- 8. Ask AND act -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2>It Doesn't Just Answer — It Acts</h2>
+                <p class="subtitle">Most tools stop at a dashboard. KOS closes the loop.</p>
+                <div class="flow-container">
+                    <div class="flow-step"><div class="flow-icon-wrapper"><i data-lucide="message-circle" style="width:26px;height:26px;"></i></div><span class="flow-label">Ask</span></div>
+                    <span class="flow-arrow"><i data-lucide="arrow-right" style="width:18px;height:18px;"></i></span>
+                    <div class="flow-step"><div class="flow-icon-wrapper"><i data-lucide="bar-chart-3" style="width:26px;height:26px;"></i></div><span class="flow-label">Analyze</span></div>
+                    <span class="flow-arrow"><i data-lucide="arrow-right" style="width:18px;height:18px;"></i></span>
+                    <div class="flow-step"><div class="flow-icon-wrapper"><i data-lucide="presentation" style="width:26px;height:26px;"></i></div><span class="flow-label">Present</span></div>
+                    <span class="flow-arrow"><i data-lucide="arrow-right" style="width:18px;height:18px;"></i></span>
+                    <div class="flow-step"><div class="flow-icon-wrapper"><i data-lucide="repeat" style="width:26px;height:26px;"></i></div><span class="flow-label">Automate</span></div>
+                    <span class="flow-arrow"><i data-lucide="arrow-right" style="width:18px;height:18px;"></i></span>
+                    <div class="flow-step"><div class="flow-icon-wrapper"><i data-lucide="zap" style="width:26px;height:26px;"></i></div><span class="flow-label">Act in your systems</span></div>
+                </div>
+                <p style="font-size:0.95rem;color:#1e293b;max-width:760px;margin:0 auto;line-height:1.6;">A brain that reads <b>and does</b>: schedule scripts, publish APIs, trigger actions in external systems, generate the deck — without leaving the conversation.</p>
+                <p class="emphasis">Insight that ends in action, not a chart you screenshot.</p>
+            </div>
+        </div>
+
+        <!-- 9. Knowledge compounds -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2>An Organization That Gets Smarter</h2>
+                <p class="subtitle">KOS learns — and the knowledge compounds</p>
+                <div class="grid-3">
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="book-open" class="icon"></i></div><div class="card-title">Captures business logic</div></div><div class="card-desc">How you define "active customer," "market rent," "margin" — once, for everyone.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="git-merge" class="icon"></i></div><div class="card-title">Remembers edge cases</div></div><div class="card-desc">The exceptions and context that used to live in one person's head.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="trending-up" class="icon"></i></div><div class="card-title">Improves from feedback</div></div><div class="card-desc">Every correction makes the next answer better — shared across the team.</div></div>
+                </div>
+                <p class="emphasis">Your organization's memory — not locked in people's heads.</p>
+            </div>
+        </div>
+
+        <!-- 10. Trusted -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2>Trusted by Design</h2>
+                <p class="subtitle">Enterprise-grade control, without the over-claims</p>
+                <div class="grid-3" style="max-width: 1040px;">
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="shield" class="icon"></i></div><div class="card-title">Access control</div></div><div class="card-desc">Role-based permissions, row-level security, SSO.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="scroll-text" class="icon"></i></div><div class="card-title">Full action trail</div></div><div class="card-desc">Every action is logged and auditable — a complete record of what was asked and what KOS did.</div></div>
+                    <div class="card highlight"><div class="card-header"><div class="card-icon"><i data-lucide="eye" class="icon"></i></div><div class="card-title">Transparency layer</div></div><div class="card-desc">See exactly what KOS is doing under the hood — every reasoning step, query, and tool call, in real time.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="badge-check" class="icon"></i></div><div class="card-title">Confidence, not bravado</div></div><div class="card-desc">Flags uncertainty and shows its work — trust you can verify.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="git-branch" class="icon"></i></div><div class="card-title">Grounded answers</div></div><div class="card-desc">Plug into governed context (catalogs / metrics) when you have it.</div></div>
+                    <div class="card"><div class="card-header"><div class="card-icon"><i data-lucide="lock" class="icon"></i></div><div class="card-title">Secure infrastructure</div></div><div class="card-desc">Runs on KOS's hardened cloud — encrypted in transit &amp; at rest, with strict access governance.</div></div>
+                </div>
+                <p class="emphasis" style="font-size:1.2rem;">Nothing happens in a black box — every step is visible and logged.</p>
+            </div>
+        </div>
+
+        <!-- 11. Engine -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h2>Powered by a Provider-Agnostic AI Engine</h2>
+                <p class="subtitle">No vendor lock-in — swap the brain, keep the OS</p>
+                <div class="provider-row" style="display:flex;justify-content:center;gap:1.25rem;margin:1.75rem 0;">
+                    <div class="card" style="width:150px;text-align:center;"><div style="width:46px;height:46px;margin:0 auto 0.5rem;border-radius:10px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;color:#fff;"><i data-lucide="sparkles" style="width:22px;height:22px;"></i></div><div class="card-title" style="text-align:center;">Google</div><div class="card-meta" style="text-align:center;">Gemini</div></div>
+                    <div class="card" style="width:150px;text-align:center;"><div style="width:46px;height:46px;margin:0 auto 0.5rem;border-radius:10px;background:linear-gradient(135deg,#10a37f,#1a7f64);display:flex;align-items:center;justify-content:center;color:#fff;"><i data-lucide="brain" style="width:22px;height:22px;"></i></div><div class="card-title" style="text-align:center;">OpenAI</div><div class="card-meta" style="text-align:center;">GPT</div></div>
+                    <div class="card" style="width:150px;text-align:center;"><div style="width:46px;height:46px;margin:0 auto 0.5rem;border-radius:10px;background:linear-gradient(135deg,#d97757,#b45309);display:flex;align-items:center;justify-content:center;color:#fff;"><i data-lucide="bot" style="width:22px;height:22px;"></i></div><div class="card-title" style="text-align:center;">Anthropic</div><div class="card-meta" style="text-align:center;">Claude</div></div>
+                    <div class="card" style="width:150px;text-align:center;"><div style="width:46px;height:46px;margin:0 auto 0.5rem;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;color:#fff;"><i data-lucide="boxes" style="width:22px;height:22px;"></i></div><div class="card-title" style="text-align:center;">Open models</div><div class="card-meta" style="text-align:center;">Llama, Mistral</div></div>
+                </div>
+                <p style="font-size:0.95rem;color:#1e293b;max-width:760px;margin:0 auto;line-height:1.6;">The kernel handles orchestration, memory, multi-round reasoning and tool execution. The model underneath is swappable — right-size cost, speed, or capability per task. As models improve, KOS gets better for free.</p>
+                <p class="emphasis" style="font-size:1.2rem;">The OS outlives any single model.</p>
+            </div>
+        </div>
+
+        <!-- 12. For everyone -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2>For Everyone — Not Just the Data Team</h2>
+                <p class="subtitle">Data democratized: anyone can query, analyze, and act</p>
+                <div style="display:flex;justify-content:center;align-items:center;gap:3rem;margin:2rem 0;">
+                    <div class="stat"><div class="stat-value negative">Days</div><div class="stat-label">file a request → wait on the data team</div></div>
+                    <div class="transition-arrow"><i data-lucide="arrow-right" style="width:32px;height:32px;"></i></div>
+                    <div class="stat"><div class="stat-value positive">Minutes</div><div class="stat-label">ask KOS → get the answer &amp; the action</div></div>
+                </div>
+                <div class="pills" style="justify-content:center; max-width:760px; margin: 0 auto;">
+                    <span class="pill">Finance</span><span class="pill">Operations</span><span class="pill">Sales &amp; RevOps</span><span class="pill">Marketing</span><span class="pill">Executives</span><span class="pill">Product</span>
+                </div>
+                <p class="emphasis">No SQL. No dashboard-building. Just ask.</p>
+            </div>
+        </div>
+
+        <!-- 13. Vision -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content">
+                <h2 style="font-size:2.6rem;">The OS for the AI-Native Organization</h2>
+                <div class="divider"></div>
+                <div style="max-width: 720px; margin: 1.5rem auto; text-align:left;">
+                    <p style="font-size:1.05rem;line-height:1.8;margin-bottom:0.75rem;color:#1e293b;"><strong style="color:#0369a1;">Data democratized.</strong> Anyone can query, analyze and act — not just technical teams.</p>
+                    <p style="font-size:1.05rem;line-height:1.8;margin-bottom:0.75rem;color:#1e293b;"><strong style="color:#0369a1;">Knowledge compounded.</strong> The organization builds a memory that grows smarter over time.</p>
+                    <p style="font-size:1.05rem;line-height:1.8;color:#1e293b;"><strong style="color:#0369a1;">AI as infrastructure.</strong> The OS becomes invisible — like electricity. You just operate.</p>
+                </div>
+                <p class="emphasis" style="font-size:1.5rem;">KOS — connect everything, ask anything, act on it.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="counter" id="counter">1 / 13</div>
+    <div class="hint">Use arrow keys or click to navigate</div>
+
+    <div class="nav">
+        <button id="prevBtn" onclick="prevSlide()" disabled><i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i></button>
+        <button id="nextBtn" onclick="nextSlide()"><i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i></button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let currentSlide = 1;
+        const totalSlides = 13;
+        function showSlide(n, updateHash = true) {
+            if (n < 1) n = 1; if (n > totalSlides) n = totalSlides;
+            currentSlide = n;
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+                if (parseInt(slide.dataset.slide) === n) slide.classList.add('active');
+            });
+            document.getElementById('progress').style.width = (n / totalSlides) * 100 + '%';
+            document.getElementById('counter').textContent = `${n} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = n === 1;
+            document.getElementById('nextBtn').disabled = n === totalSlides;
+            if (updateHash) history.pushState(null, null, `#slide-${n}`);
+        }
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+        window.addEventListener('popstate', () => { const s = getSlideFromHash(); if (s) showSlide(s, false); });
+        function getSlideFromHash() { const m = window.location.hash.match(/^#slide-(\d+)$/); if (m) { const num = parseInt(m[1]); if (num >= 1 && num <= totalSlides) return num; } return null; }
+        function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight': case ' ': case 'Enter': nextSlide(); break;
+                case 'ArrowLeft': case 'Backspace': prevSlide(); break;
+                case 'Home': showSlide(1); break;
+                case 'End': showSlide(totalSlides); break;
+                case 'f': case 'F': toggleFullscreen(); break;
+                case 'Escape': if (document.fullscreenElement) document.exitFullscreen(); break;
+            }
+        });
+        document.getElementById('presentation').addEventListener('click', (e) => {
+            const x = e.clientX, width = window.innerWidth;
+            if (x < width / 3) prevSlide(); else if (x > width * 2 / 3) nextSlide();
+        });
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].screenX; if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : prevSlide(); });
+        const initialSlide = getSlideFromHash() || 1;
+        showSlide(initialSlide, false);
+        if (!window.location.hash) history.replaceState(null, null, `#slide-1`);
+    </script>
+</body>
+</html>

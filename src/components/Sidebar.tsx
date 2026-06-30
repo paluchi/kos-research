@@ -3,10 +3,12 @@ import {
   Rocket,
   TrendingUp,
   Swords,
-  Users,
-  ShieldAlert,
   Target,
   BarChart3,
+  Megaphone,
+  ClipboardCheck,
+  StickyNote,
+  Presentation,
 } from "lucide-react";
 
 const sections = [
@@ -20,11 +22,18 @@ const sections = [
   {
     label: "Research",
     items: [
-      { to: "/market", label: "Market", icon: TrendingUp },
       { to: "/competitors", label: "Competitors", icon: Swords },
       { to: "/insights", label: "Insights", icon: BarChart3 },
-      { to: "/personas", label: "Personas", icon: Users },
-      { to: "/objections", label: "Objections", icon: ShieldAlert },
+      { to: "/market", label: "Market", icon: TrendingUp },
+      { to: "/gtm", label: "Go-to-Market", icon: Megaphone },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      { to: "/validate", label: "Validation", icon: ClipboardCheck },
+      { to: "/notes", label: "Notes", icon: StickyNote },
+      { to: "/slides", label: "Slides", icon: Presentation },
     ],
   },
 ];
