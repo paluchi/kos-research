@@ -194,6 +194,7 @@ import { aiStartups } from "./competitors_ai";
 import { textToSQL } from "./competitors_textsql";
 import { openSourceBI, dataGovernance, adjacentTools } from "./competitors_infra";
 import { graveyard } from "./competitors_graveyard";
+import { workflowAutomation, aiAgentBuilders } from "./competitors_automation";
 import { attachDeepResearch } from "./deep_merge";
 import { enrichment } from "./competitor_enrichment";
 
@@ -209,6 +210,8 @@ const raw: Competitor[] = [
   ...dataGovernance,
   ...adjacentTools,
   ...graveyard,
+  ...workflowAutomation,
+  ...aiAgentBuilders,
 ];
 
 function attachEnrichment(comps: Competitor[]): Competitor[] {
@@ -231,5 +234,7 @@ export const categories = [
   "Open-Source BI",
   "Data Governance",
   "Adjacent / Workflow",
+  "Workflow Automation (iPaaS)",
+  "AI Agent / Flow Builder",
   "Dead / Acquired",
 ];
