@@ -83,6 +83,16 @@ const categoryMeta: Record<string, { blurb: string; moat: string }> = {
       "Tools that border BI without being BI — internal-tool builders, semantic layers, federated query, and no-code query builders. The least cohesive group, united only by 'touches data, is not a dashboard.'",
     moat: "Varies widely and is not shared: Retool's internal apps become load-bearing, Cube owns semantic-layer plumbing others depend on, MindsDB bets on federated AI access. Real moats, but each is category-specific.",
   },
+  "Workflow Automation (iPaaS)": {
+    blurb:
+      "No-code and low-code automation platforms — trigger-action and node/edge canvases that wire SaaS apps, APIs, and code steps into runnable workflows. Cohesive around 'automate work across tools without building a backend,' spanning consumer-simple (Zapier) through developer-first and self-hostable (n8n, Windmill, Node-RED) to enterprise iPaaS (Workato, Boomi, Power Automate).",
+    moat: "Distribution and connector breadth for the leaders (Zapier's 9,000+ apps), self-host and OSS community for the challengers (n8n, Node-RED, Activepieces), and enterprise governance plus on-prem connectivity for the incumbents (Workato, Power Automate). Switching costs compound with every workflow a team comes to depend on.",
+  },
+  "AI Agent / Flow Builder": {
+    blurb:
+      "The LLM-native wave of visual builders for AI agents and multi-step reasoning flows — chaining prompts, tools, RAG, and API calls on a canvas. Loosely cohesive: ranges from no-code business-agent products (Lindy, Gumloop, Relay.app) to open-source LLM-app frameworks (Flowise, Langflow, Dify).",
+    moat: "Mostly early and contested — the canvas itself is easily cloned, so defensibility comes from agent reliability, prebuilt vertical templates, and open-source community traction rather than the builder UI. Squeezed from both sides by iPaaS incumbents bolting on agents and foundation-model vendors moving up the stack.",
+  },
   "Dead / Acquired": {
     blurb:
       "The graveyard — companies that shut down or were absorbed. Cohesive only as a cautionary cohort.",
